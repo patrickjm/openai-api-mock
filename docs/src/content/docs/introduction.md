@@ -1,47 +1,47 @@
 ---
 title: Introduction
-description: Learn about OpenAI API Mock and why you should use it for testing LLM applications
+description: A mock OpenAI API server for testing LLM applications
 ---
 
 # Introduction
 
-OpenAI API Mock is a powerful tool for testing LLM applications without the unpredictability and cost of real API calls. It provides a mock OpenAI API server that returns configurable, predictable responses based on your input patterns.
+OpenAI API Mock is a mock server that mimics the OpenAI API. It returns configurable responses based on message patterns you define, making LLM application testing predictable and repeatable.
 
-## Why Use OpenAI API Mock?
+## What it looks like
 
-### 🔬 **Deterministic Testing**
-Traditional LLM testing is challenging because responses vary. With OpenAI API Mock, you define exact responses for specific inputs, making your tests reliable and repeatable.
+```yaml
+# config.yaml
+apiKey: "test-key"
+port: 3000
+responses:
+  - id: "greeting"
+    matcher:
+      type: "contains"
+      pattern: "hello"
+    response:
+      content: "Hello! How can I help you today?"
+```
 
-### 💰 **Cost Effective**
-Avoid API costs during development and testing. Run unlimited tests without worrying about token usage or rate limits.
+```javascript
+// Your test code
+const openai = new OpenAI({
+  baseURL: 'http://localhost:3000/v1',
+  apiKey: 'test-key'
+});
 
-### ⚡ **Fast Development**
-No network latency or API downtime issues. Your tests run instantly with consistent performance.
+const response = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Say hello!' }]
+});
+// Returns: "Hello! How can I help you today?"
+```
 
-### 🎯 **Precise Control**
-Test edge cases, error conditions, and specific response formats that would be difficult to reproduce with a real API.
+## Why use it
 
-## How It Works
+Testing LLM applications is hard because:
+- Real API responses vary each time
+- API calls cost money and have rate limits
+- Network issues can break tests
+- You can't test specific edge cases reliably
 
-1. **Define Patterns**: Create YAML configuration files that specify message patterns and their corresponding responses
-2. **Start Server**: Run the mock server locally or in your CI/CD environment  
-3. **Point Your App**: Configure your OpenAI client to use the mock server's URL
-4. **Test Away**: Your application receives predictable responses based on your configuration
-
-## Use Cases
-
-- **Unit Testing**: Test individual components with known inputs and outputs
-- **Integration Testing**: Verify your application handles various response formats correctly
-- **Development**: Build features without consuming API tokens
-- **CI/CD**: Run automated tests without external dependencies
-- **Demo/Staging**: Provide consistent behavior for demonstrations
-
-## What Makes It Special
-
-Unlike simple mock frameworks, OpenAI API Mock provides:
-
-- **Multiple Matching Strategies**: Exact, fuzzy, regex, and substring matching
-- **Response Inversion**: Match when patterns DON'T match
-- **Streaming Support**: Full Server-Sent Events compatibility
-- **OpenAI Compatibility**: Drop-in replacement with proper error handling
-- **TypeScript Support**: Full type safety and IDE integration
+This mock server solves these issues by giving you complete control over responses during testing.

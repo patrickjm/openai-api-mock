@@ -107,7 +107,7 @@ If you want to contribute or modify the source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/patrickmoriarty/openai-api-mock.git
+git clone https://github.com/patrickjm/openai-api-mock.git
 cd openai-api-mock
 
 # Install dependencies

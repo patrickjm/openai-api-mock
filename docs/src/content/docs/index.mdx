@@ -1,55 +1,56 @@
 ---
-title: OpenAI API Mock
+title: Introduction
 description: A mock OpenAI API server for testing LLM applications
 template: splash
 hero:
-  tagline: Test your LLM applications with predictable, configurable responses
-  image:
-    file: ../../assets/houston.webp
+  tagline: A mock server that mimics the OpenAI API for predictable testing
   actions:
     - text: Get Started
-      link: /quick-start/
+      link: /openai-api-mock/quick-start
       icon: right-arrow
     - text: View on GitHub
-      link: https://github.com/patrickmoriarty/openai-api-mock
+      link: https://github.com/patrickjm/openai-api-mock
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Key Features
+## What it looks like
 
-<CardGrid stagger>
-	<Card title="NPX Runnable" icon="rocket">
-		Use directly with `npx openai-api-mock` - no global installation required.
-	</Card>
-	<Card title="Multiple Matching Strategies" icon="puzzle">
-		Support for exact, fuzzy, regex, and contains message matching with optional inversion.
-	</Card>
-	<Card title="OpenAI Compatible" icon="approve-check">
-		Drop-in replacement for OpenAI API endpoints with full streaming support.
-	</Card>
-	<Card title="YAML Configuration" icon="document">
-		Define responses with simple, readable YAML files.
-	</Card>
-	<Card title="TypeScript First" icon="seti:typescript">
-		Written in TypeScript with full type safety and excellent IDE support.
-	</Card>
-	<Card title="Flexible Logging" icon="information">
-		Log to file or stdout with configurable verbosity levels.
-	</Card>
-</CardGrid>
+```yaml
+# config.yaml
+apiKey: "test-key"
+port: 3000
+responses:
+  - id: "greeting"
+    matcher:
+      type: "contains"
+      pattern: "hello"
+    response:
+      content: "Hello! How can I help you today?"
+```
 
-## Quick Example
-
-```bash
-# Install and run
-npx openai-api-mock --config config.yaml
-
-# Use with your OpenAI client
+```javascript
+// Your test code
 const openai = new OpenAI({
   baseURL: 'http://localhost:3000/v1',
-  apiKey: 'your-test-key'
+  apiKey: 'test-key'
 });
+
+const response = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Say hello!' }]
+});
+// Returns: "Hello! How can I help you today!"
 ```
+
+## Why use it
+
+Testing LLM applications is hard because:
+- Real API responses vary each time
+- API calls cost money and have rate limits
+- Network issues can break tests
+- You can't test specific edge cases reliably
+
+This mock server solves these issues by giving you complete control over responses during testing.
