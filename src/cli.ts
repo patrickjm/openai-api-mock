@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { MockServer } from './server';
 import { ConfigLoader } from './config';
 import { Logger } from './logger';
+import { MockServer } from './server';
 
 const program = new Command();
 
 program
-  .name('openai-api-mock')
+  .name('openai-mock-api')
   .description('A mock OpenAI API server for testing LLM applications')
   .version('1.0.0')
   .requiredOption('-c, --config <path>', 'Path to YAML configuration file')

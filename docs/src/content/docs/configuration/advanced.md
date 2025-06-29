@@ -410,7 +410,7 @@ responses:
 Enable detailed logging for debugging:
 
 ```bash
-npx openai-api-mock --config config.yaml --verbose
+npx openai-mock-api --config config.yaml --verbose
 ```
 
 ### Response Identification

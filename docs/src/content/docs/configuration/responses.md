@@ -5,7 +5,7 @@ description: Learn how to configure OpenAI-compatible responses
 
 # Response Format
 
-OpenAI API Mock returns responses that match the OpenAI API format exactly, ensuring compatibility with existing client libraries.
+OpenAI Mock API returns responses that match the OpenAI API format exactly, ensuring compatibility with existing client libraries.
 
 ## Basic Response Structure
 

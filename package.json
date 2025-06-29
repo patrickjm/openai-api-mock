@@ -1,9 +1,9 @@
 {
-  "name": "openai-api-mock",
+  "name": "openai-mock-api",
   "version": "1.0.0",
   "main": "dist/index.js",
   "bin": {
-    "openai-api-mock": "./dist/cli.js"
+    "openai-mock-api": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

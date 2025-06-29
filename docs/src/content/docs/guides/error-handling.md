@@ -1,11 +1,11 @@
 ---
 title: Error Handling
-description: Understanding and testing error conditions with OpenAI API Mock
+description: Understanding and testing error conditions with OpenAI Mock API
 ---
 
 # Error Handling
 
-OpenAI API Mock provides comprehensive error handling that matches the OpenAI API's error responses, allowing you to test error conditions in your applications.
+OpenAI Mock API provides comprehensive error handling that matches the OpenAI API's error responses, allowing you to test error conditions in your applications.
 
 ## Types of Errors
 

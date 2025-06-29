@@ -1,11 +1,11 @@
 ---
 title: Integration Examples
-description: Real-world examples of integrating OpenAI API Mock into various testing scenarios
+description: Real-world examples of integrating OpenAI Mock API into various testing scenarios
 ---
 
 # Integration Examples
 
-Learn how to integrate OpenAI API Mock into different types of applications and testing frameworks.
+Learn how to integrate OpenAI Mock API into different types of applications and testing frameworks.
 
 ## Node.js Application Testing
 
@@ -411,7 +411,7 @@ def setup_environment():
     
     # Start mock server
     process = subprocess.Popen([
-        "npx", "openai-api-mock", 
+        "npx", "openai-mock-api", 
         "--config", "python-test-config.yaml"
     ])
     time.sleep(2)  # Wait for server to start
@@ -435,7 +435,7 @@ let mockServer: ChildProcess;
 export async function setupMockServer(): Promise<void> {
   return new Promise((resolve, reject) => {
     mockServer = spawn('npx', [
-      'openai-api-mock',
+      'openai-mock-api',
       '--config',
       'test-config.yaml',
       '--port',
@@ -533,11 +533,11 @@ COPY src/ ./src/
 COPY tests/ ./tests/
 COPY test-config.yaml ./
 
-# Install openai-api-mock globally
-RUN npm install -g openai-api-mock
+# Install openai-mock-api globally
+RUN npm install -g openai-mock-api
 
 # Run tests
-CMD ["sh", "-c", "openai-api-mock --config test-config.yaml & sleep 2 && npm test"]
+CMD ["sh", "-c", "openai-mock-api --config test-config.yaml & sleep 2 && npm test"]
 ```
 
 ### Docker Compose for Complex Testing
@@ -548,7 +548,7 @@ version: '3.8'
 services:
   openai-mock:
     image: node:18-alpine
-    command: sh -c "npm install -g openai-api-mock && openai-api-mock --config /config/test-config.yaml"
+    command: sh -c "npm install -g openai-mock-api && openai-mock-api --config /config/test-config.yaml"
     ports:
       - "3000:3000"
     volumes:
@@ -612,8 +612,8 @@ jobs:
       
       - name: Start OpenAI Mock
         run: |
-          npm install -g openai-api-mock
-          openai-api-mock --config test-config.yaml &
+          npm install -g openai-mock-api
+          openai-mock-api --config test-config.yaml &
           sleep 3
       
       - name: Run tests
@@ -639,7 +639,7 @@ test:
       command: 
         - sh
         - -c
-        - "npm install -g openai-api-mock && openai-api-mock --config test-config.yaml"
+        - "npm install -g openai-mock-api && openai-mock-api --config test-config.yaml"
   
   variables:
     OPENAI_BASE_URL: "http://openai-mock:3000/v1"
@@ -657,4 +657,4 @@ test:
       junit: junit.xml
 ```
 
-These examples demonstrate how to integrate OpenAI API Mock into various testing scenarios, from simple unit tests to complex CI/CD pipelines. The key is to start the mock server before your tests run and configure your OpenAI client to point to the mock server's URL.
+These examples demonstrate how to integrate OpenAI Mock API into various testing scenarios, from simple unit tests to complex CI/CD pipelines. The key is to start the mock server before your tests run and configure your OpenAI client to point to the mock server's URL.

@@ -5,7 +5,7 @@ description: Learn about the different message matching strategies available
 
 # Matcher Types
 
-OpenAI API Mock supports four different matching strategies, each with optional inversion capabilities.
+OpenAI Mock API supports four different matching strategies, each with optional inversion capabilities.
 
 ## Exact Match
 

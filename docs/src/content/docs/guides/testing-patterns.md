@@ -1,11 +1,11 @@
 ---
 title: Testing Patterns
-description: Common patterns and best practices for testing with OpenAI API Mock
+description: Common patterns and best practices for testing with OpenAI Mock API
 ---
 
 # Testing Patterns
 
-Learn effective patterns for testing LLM applications using OpenAI API Mock.
+Learn effective patterns for testing LLM applications using OpenAI Mock API.
 
 ## Unit Testing Patterns
 
@@ -433,14 +433,14 @@ jobs:
         
       - name: Start mock API
         run: |
-          npx openai-api-mock --config test-config.yaml &
+          npx openai-mock-api --config test-config.yaml &
           sleep 2  # Wait for server to start
         
       - name: Run tests
         run: npm test
         
       - name: Stop mock API
-        run: pkill -f openai-api-mock
+        run: pkill -f openai-mock-api
 ```
 
 ### Docker Compose for Integration Tests
@@ -455,7 +455,7 @@ services:
       - "3000:3000"
     volumes:
       - ./test-config.yaml:/app/config.yaml
-    command: ["openai-api-mock", "--config", "/app/config.yaml"]
+    command: ["openai-mock-api", "--config", "/app/config.yaml"]
     
   test-runner:
     build: 

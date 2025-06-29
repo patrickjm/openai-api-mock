@@ -1,18 +1,18 @@
 ---
 title: Installation
-description: Different ways to install and use OpenAI API Mock
+description: Different ways to install and use OpenAI Mock API
 ---
 
 # Installation
 
-OpenAI API Mock can be used in several ways depending on your needs.
+OpenAI Mock API can be used in several ways depending on your needs.
 
 ## NPX (Recommended)
 
 The fastest way to get started - no installation required:
 
 ```bash
-npx openai-api-mock --config config.yaml
+npx openai-mock-api --config config.yaml
 ```
 
 This downloads and runs the latest version directly. Perfect for:
@@ -22,11 +22,11 @@ This downloads and runs the latest version directly. Perfect for:
 
 ## Global Installation
 
-Install globally to use the `openai-api-mock` command anywhere:
+Install globally to use the `openai-mock-api` command anywhere:
 
 ```bash
-npm install -g openai-api-mock
-openai-api-mock --config config.yaml
+npm install -g openai-mock-api
+openai-mock-api --config config.yaml
 ```
 
 ## Local Installation
@@ -35,13 +35,13 @@ Add to your project as a development dependency:
 
 ```bash
 # npm
-npm install --save-dev openai-api-mock
+npm install --save-dev openai-mock-api
 
 # yarn
-yarn add --dev openai-api-mock
+yarn add --dev openai-mock-api
 
 # pnpm
-pnpm add --save-dev openai-api-mock
+pnpm add --save-dev openai-mock-api
 ```
 
 Then use via npm scripts in `package.json`:
@@ -49,8 +49,8 @@ Then use via npm scripts in `package.json`:
 ```json
 {
   "scripts": {
-    "mock-api": "openai-api-mock --config test-config.yaml",
-    "test:integration": "openai-api-mock --config test-config.yaml & npm run test && pkill -f openai-api-mock"
+    "mock-api": "openai-mock-api --config test-config.yaml",
+    "test:integration": "openai-mock-api --config test-config.yaml & npm run test && pkill -f openai-mock-api"
   }
 }
 ```
@@ -63,10 +63,10 @@ Create a Dockerfile for containerized usage:
 FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install -g openai-api-mock
+RUN npm install -g openai-mock-api
 COPY config.yaml ./
 EXPOSE 3000
-CMD ["openai-api-mock", "--config", "config.yaml"]
+CMD ["openai-mock-api", "--config", "config.yaml"]
 ```
 
 Or use with docker-compose:
@@ -77,7 +77,7 @@ version: '3.8'
 services:
   openai-mock:
     image: node:18-alpine
-    command: sh -c "npm install -g openai-api-mock && openai-api-mock --config /config/config.yaml"
+    command: sh -c "npm install -g openai-mock-api && openai-mock-api --config /config/config.yaml"
     ports:
       - "3000:3000"
     volumes:
@@ -95,10 +95,10 @@ Verify your installation:
 
 ```bash
 # Check version
-openai-api-mock --version
+openai-mock-api --version
 
 # View help
-openai-api-mock --help
+openai-mock-api --help
 ```
 
 ## Development Setup
@@ -107,8 +107,8 @@ If you want to contribute or modify the source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/patrickjm/openai-api-mock.git
-cd openai-api-mock
+git clone https://github.com/patrickjm/openai-mock-api.git
+cd openai-mock-api
 
 # Install dependencies
 npm install
@@ -128,12 +128,12 @@ npm run dev -- --config example-config.yaml
 ### Command Not Found
 If you get "command not found" after global installation:
 - Ensure npm's global bin directory is in your PATH
-- Try `npm list -g openai-api-mock` to verify installation
+- Try `npm list -g openai-mock-api` to verify installation
 
 ### Permission Issues
 On Unix systems, you might need sudo for global installation:
 ```bash
-sudo npm install -g openai-api-mock
+sudo npm install -g openai-mock-api
 ```
 
 Or use a Node version manager like nvm to avoid permission issues.
@@ -141,7 +141,7 @@ Or use a Node version manager like nvm to avoid permission issues.
 ### Port Already in Use
 If port 3000 is busy:
 ```bash
-openai-api-mock --config config.yaml --port 3001
+openai-mock-api --config config.yaml --port 3001
 ```
 
 Or specify port in your config file:

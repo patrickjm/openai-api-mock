@@ -1,10 +1,10 @@
-# OpenAI API Mock
+# OpenAI Mock API
 
 A mock OpenAI API server for testing LLM applications. This tool allows you to define predictable responses to specific message patterns, making it easier to test your AI-powered applications without the variability of real LLM responses.
 
 ## Features
 
-- 🔄 **NPX runnable** - Use directly with `npx openai-api-mock`
+- 🔄 **NPX runnable** - Use directly with `npx openai-mock-api`
 - 📝 **YAML configuration** - Define responses with simple YAML files
 - 🎯 **Multiple matching strategies** - Exact, fuzzy, regex, and contains message matching
 - 🔒 **API key validation** - Secure your mock API with custom keys
@@ -16,13 +16,13 @@ A mock OpenAI API server for testing LLM applications. This tool allows you to d
 ## Installation
 
 ```bash
-npm install -g openai-api-mock
+npm install -g openai-mock-api
 ```
 
 Or use directly with npx:
 
 ```bash
-npx openai-api-mock --config config.yaml
+npx openai-mock-api --config config.yaml
 ```
 
 ## Usage
@@ -61,7 +61,7 @@ responses:
 2. Start the mock server:
 
 ```bash
-npx openai-api-mock --config config.yaml --port 3000
+npx openai-mock-api --config config.yaml --port 3000
 ```
 
 3. Use with your OpenAI client:
@@ -83,7 +83,7 @@ const response = await openai.chat.completions.create({
 ### CLI Options
 
 ```bash
-npx openai-api-mock [options]
+npx openai-mock-api [options]
 
 Options:
   -c, --config <path>      Path to YAML configuration file (required)
@@ -288,7 +288,7 @@ The mock server returns OpenAI-compatible error responses:
 
 ```bash
 git clone <repository>
-cd openai-api-mock
+cd openai-mock-api
 npm install
 ```
 
@@ -312,7 +312,7 @@ npm run dev -- --config example-config.yaml
 
 ## Documentation
 
-For comprehensive documentation, visit our [documentation site](https://patrickjm.github.io/openai-api-mock).
+For comprehensive documentation, visit our [documentation site](https://patrickjm.github.io/openai-mock-api).
 
 The documentation includes:
 - **Getting Started**: Quick setup and installation guides

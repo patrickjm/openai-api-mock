@@ -1,16 +1,16 @@
 ---
 title: CLI Options
-description: Command-line interface reference for OpenAI API Mock
+description: Command-line interface reference for OpenAI Mock API
 ---
 
 # CLI Options
 
-Complete reference for the `openai-api-mock` command-line interface.
+Complete reference for the `openai-mock-api` command-line interface.
 
 ## Synopsis
 
 ```bash
-openai-api-mock [options]
+openai-mock-api [options]
 ```
 
 ## Required Options
@@ -20,8 +20,8 @@ openai-api-mock [options]
 **Required** - Path to the YAML configuration file.
 
 ```bash
-openai-api-mock --config config.yaml
-openai-api-mock -c /path/to/config.yaml
+openai-mock-api --config config.yaml
+openai-mock-api -c /path/to/config.yaml
 ```
 
 The configuration file must be a valid YAML file containing your API key, responses, and other settings.
@@ -33,8 +33,8 @@ The configuration file must be a valid YAML file containing your API key, respon
 Port number to run the server on. Defaults to `3000`.
 
 ```bash
-openai-api-mock --config config.yaml --port 8080
-openai-api-mock -c config.yaml -p 8080
+openai-mock-api --config config.yaml --port 8080
+openai-mock-api -c config.yaml -p 8080
 ```
 
 If both the CLI option and config file specify a port, the CLI option takes precedence.
@@ -44,8 +44,8 @@ If both the CLI option and config file specify a port, the CLI option takes prec
 Path to a log file. If not specified, logs are written to stdout.
 
 ```bash
-openai-api-mock --config config.yaml --log-file server.log
-openai-api-mock -c config.yaml -l /var/log/openai-mock.log
+openai-mock-api --config config.yaml --log-file server.log
+openai-mock-api -c config.yaml -l /var/log/openai-mock.log
 ```
 
 The log file will be created if it doesn't exist. The directory must exist.
@@ -59,8 +59,8 @@ Enable verbose logging. Shows debug-level information including:
 - Timing information
 
 ```bash
-openai-api-mock --config config.yaml --verbose
-openai-api-mock -c config.yaml -v
+openai-mock-api --config config.yaml --verbose
+openai-mock-api -c config.yaml -v
 ```
 
 ### `-h, --help`
@@ -68,8 +68,8 @@ openai-api-mock -c config.yaml -v
 Display help information and exit.
 
 ```bash
-openai-api-mock --help
-openai-api-mock -h
+openai-mock-api --help
+openai-mock-api -h
 ```
 
 ### `--version`
@@ -77,7 +77,7 @@ openai-api-mock -h
 Display version information and exit.
 
 ```bash
-openai-api-mock --version
+openai-mock-api --version
 ```
 
 ## Examples
@@ -86,19 +86,19 @@ openai-api-mock --version
 
 ```bash
 # Minimal setup
-openai-api-mock --config config.yaml
+openai-mock-api --config config.yaml
 
 # Custom port
-openai-api-mock --config config.yaml --port 3001
+openai-mock-api --config config.yaml --port 3001
 
 # With logging
-openai-api-mock --config config.yaml --log-file api.log
+openai-mock-api --config config.yaml --log-file api.log
 
 # Verbose mode for debugging
-openai-api-mock --config config.yaml --verbose
+openai-mock-api --config config.yaml --verbose
 
 # All options combined
-openai-api-mock \
+openai-mock-api \
   --config config.yaml \
   --port 3001 \
   --log-file api.log \
@@ -109,26 +109,26 @@ openai-api-mock \
 
 ```bash
 # Start with verbose logging for development
-openai-api-mock -c dev-config.yaml -v
+openai-mock-api -c dev-config.yaml -v
 
 # Use a different port to avoid conflicts
-openai-api-mock -c config.yaml -p 3001
+openai-mock-api -c config.yaml -p 3001
 
 # Log to a specific file for debugging
-openai-api-mock -c config.yaml -l debug.log -v
+openai-mock-api -c config.yaml -l debug.log -v
 ```
 
 ### Production Usage
 
 ```bash
 # Production with specific port and logging
-openai-api-mock \
+openai-mock-api \
   --config production-config.yaml \
   --port 8080 \
   --log-file /var/log/openai-mock.log
 
 # Using environment variables
-PORT=8080 LOG_FILE=/var/log/api.log openai-api-mock -c config.yaml
+PORT=8080 LOG_FILE=/var/log/api.log openai-mock-api -c config.yaml
 ```
 
 ## Configuration File Priority
@@ -146,7 +146,7 @@ port: 3000
 
 ```bash
 # This will run on port 8080, not 3000
-openai-api-mock --config config.yaml --port 8080
+openai-mock-api --config config.yaml --port 8080
 ```
 
 ## Environment Variables
@@ -159,7 +159,7 @@ export OPENAI_MOCK_PORT=3001
 export OPENAI_MOCK_CONFIG=config.yaml
 
 # Use in commands
-openai-api-mock --config "$OPENAI_MOCK_CONFIG" --port "$OPENAI_MOCK_PORT"
+openai-mock-api --config "$OPENAI_MOCK_CONFIG" --port "$OPENAI_MOCK_PORT"
 ```
 
 ## Exit Codes
@@ -181,7 +181,7 @@ openai-api-mock --config "$OPENAI_MOCK_CONFIG" --port "$OPENAI_MOCK_PORT"
 ls -la config.yaml
 
 # Use absolute path
-openai-api-mock --config /full/path/to/config.yaml
+openai-mock-api --config /full/path/to/config.yaml
 ```
 
 **"Port already in use"**
@@ -190,7 +190,7 @@ openai-api-mock --config /full/path/to/config.yaml
 lsof -i :3000
 
 # Use a different port
-openai-api-mock --config config.yaml --port 3001
+openai-mock-api --config config.yaml --port 3001
 ```
 
 **"Permission denied" for log file**
@@ -199,7 +199,7 @@ openai-api-mock --config config.yaml --port 3001
 ls -la /var/log/
 
 # Use a writable location
-openai-api-mock --config config.yaml --log-file ./api.log
+openai-mock-api --config config.yaml --log-file ./api.log
 ```
 
 ### Debug Information
@@ -207,7 +207,7 @@ openai-api-mock --config config.yaml --log-file ./api.log
 Use verbose mode to get detailed information:
 
 ```bash
-openai-api-mock --config config.yaml --verbose
+openai-mock-api --config config.yaml --verbose
 ```
 
 This will show:

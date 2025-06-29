@@ -1,11 +1,11 @@
 ---
 title: Streaming Responses
-description: How to test Server-Sent Events streaming with OpenAI API Mock
+description: How to test Server-Sent Events streaming with OpenAI Mock API
 ---
 
 # Streaming Responses
 
-OpenAI API Mock supports full Server-Sent Events (SSE) streaming, allowing you to test streaming chat completions just like the real OpenAI API.
+OpenAI Mock API supports full Server-Sent Events (SSE) streaming, allowing you to test streaming chat completions just like the real OpenAI API.
 
 ## How Streaming Works
 

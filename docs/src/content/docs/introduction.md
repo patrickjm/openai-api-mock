@@ -5,7 +5,7 @@ description: A mock OpenAI API server for testing LLM applications
 
 # Introduction
 
-OpenAI API Mock is a mock server that mimics the OpenAI API. It returns configurable responses based on message patterns you define, making LLM application testing predictable and repeatable.
+OpenAI Mock API is a mock server that mimics the OpenAI API. It returns configurable responses based on message patterns you define, making LLM application testing predictable and repeatable.
 
 ## What it looks like
 

@@ -1,11 +1,11 @@
 ---
 title: Configuration Overview
-description: Learn the basics of configuring OpenAI API Mock
+description: Learn the basics of configuring OpenAI Mock API
 ---
 
 # Configuration Overview
 
-OpenAI API Mock uses YAML configuration files to define how it should respond to different message patterns.
+OpenAI Mock API uses YAML configuration files to define how it should respond to different message patterns.
 
 ## Basic Structure
 

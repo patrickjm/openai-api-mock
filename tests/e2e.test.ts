@@ -1,9 +1,9 @@
-import { MockServer, ConfigLoader, Logger } from '../src';
-import OpenAI from 'openai';
 import fs from 'fs';
+import OpenAI from 'openai';
 import path from 'path';
+import { ConfigLoader, Logger, MockServer } from '../src';
 
-describe('OpenAI API Mock E2E Tests', () => {
+describe('OpenAI Mock API E2E Tests', () => {
   let server: MockServer;
   let openai: OpenAI;
   const testPort = 3001;

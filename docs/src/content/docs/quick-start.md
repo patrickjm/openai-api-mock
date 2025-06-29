@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Get up and running with OpenAI API Mock in minutes
+description: Get up and running with OpenAI Mock API in minutes
 ---
 
 # Quick Start
@@ -43,7 +43,7 @@ responses:
 Run the mock server using npx (no installation required):
 
 ```bash
-npx openai-api-mock --config config.yaml
+npx openai-mock-api --config config.yaml
 ```
 
 You should see output like:
@@ -155,16 +155,16 @@ Customize the server with command-line options:
 
 ```bash
 # Custom port
-npx openai-api-mock --config config.yaml --port 3001
+npx openai-mock-api --config config.yaml --port 3001
 
 # Enable verbose logging
-npx openai-api-mock --config config.yaml --verbose
+npx openai-mock-api --config config.yaml --verbose
 
 # Log to file
-npx openai-api-mock --config config.yaml --log-file server.log
+npx openai-mock-api --config config.yaml --log-file server.log
 
 # See all options
-npx openai-api-mock --help
+npx openai-mock-api --help
 ```
 
 ## Next Steps
