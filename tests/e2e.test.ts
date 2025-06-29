@@ -32,10 +32,6 @@ responses:
             role: "assistant"
             content: "Hello! I'm doing well, thank you for asking."
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
 
   - id: "fuzzy-help"
     matcher:
@@ -55,10 +51,6 @@ responses:
             role: "assistant"
             content: "I'd be happy to help!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 12
-        completion_tokens: 8
-        total_tokens: 20
 
   - id: "regex-code"
     matcher:
@@ -77,10 +69,6 @@ responses:
             role: "assistant"
             content: "Here's some Python code for you!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 20
-        completion_tokens: 10
-        total_tokens: 30
 
   - id: "contains-weather"
     matcher:
@@ -99,10 +87,6 @@ responses:
             role: "assistant"
             content: "The weather is nice today!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 10
-        completion_tokens: 8
-        total_tokens: 18
 
   - id: "inverted-contains"
     matcher:
@@ -124,10 +108,6 @@ responses:
             role: "assistant"
             content: "This matches messages that don't contain the specific word!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
 
   - id: "specific-unmatched"
     matcher:
@@ -146,10 +126,6 @@ responses:
             role: "assistant"
             content: "This should not match"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 5
-        total_tokens: 20
 `;
 
     fs.writeFileSync(testConfigPath, testConfig);
@@ -212,7 +188,10 @@ responses:
       });
 
       expect(response.choices[0].message.content).toBe("Hello! I'm doing well, thank you for asking.");
-      expect(response.usage?.total_tokens).toBe(27);
+      expect(response.usage).toBeDefined();
+      expect(response.usage?.total_tokens).toBeGreaterThan(0);
+      expect(response.usage?.prompt_tokens).toBeGreaterThan(0);
+      expect(response.usage?.completion_tokens).toBeGreaterThan(0);
     });
 
     test('should match fuzzy messages', async () => {

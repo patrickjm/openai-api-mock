@@ -1,8 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { Server } from 'http';
-import { MockConfig, ChatCompletionRequest, OpenAIError, OpenAIResponse, StreamResponse } from './types';
+import { MockConfig, ChatCompletionRequest, OpenAIError, OpenAIResponse, StreamResponse, Usage } from './types';
 import { Logger } from './logger';
 import { MessageMatcherService } from './matcher';
+import { encoding_for_model } from 'tiktoken';
 
 export class MockServer {
   private app: express.Application;
@@ -144,13 +145,18 @@ export class MockServer {
       if (request.stream) {
         await this.handleStreamingResponse(res, mockResponse, request);
       } else {
+        // Calculate tokens dynamically
+        const responseContent = mockResponse.response.choices[0]?.message?.content || '';
+        const usage = this.calculateTokens(request, responseContent);
+
         // Create OpenAI-compatible response
-        const response: OpenAIResponse = {
+        const response: OpenAIResponse & { usage: Usage } = {
           ...mockResponse.response,
           id: `chatcmpl-${this.generateId()}`,
           object: 'chat.completion',
           created: Math.floor(Date.now() / 1000),
           model: request.model,
+          usage,
         };
 
         this.logger.info(`Matched request to response: ${mockResponse.id}`);
@@ -251,6 +257,40 @@ export class MockServer {
 
   private generateId(): string {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
+  private calculateTokens(request: ChatCompletionRequest, responseContent: string): Usage {
+    try {
+      const encoding = encoding_for_model(request.model as any);
+      
+      // Calculate prompt tokens from all messages
+      const promptText = request.messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      const promptTokens = encoding.encode(promptText).length;
+      
+      // Calculate completion tokens from response content
+      const completionTokens = encoding.encode(responseContent).length;
+      
+      encoding.free();
+      
+      return {
+        prompt_tokens: promptTokens,
+        completion_tokens: completionTokens,
+        total_tokens: promptTokens + completionTokens
+      };
+    } catch (error) {
+      // Fallback to basic estimation if model encoding fails
+      this.logger.warn(`Token calculation failed for model ${request.model}, using fallback`, error);
+      
+      const promptText = request.messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+      const promptTokens = Math.ceil(promptText.length / 4); // Rough estimation: 4 chars per token
+      const completionTokens = Math.ceil(responseContent.length / 4);
+      
+      return {
+        prompt_tokens: promptTokens,
+        completion_tokens: completionTokens,
+        total_tokens: promptTokens + completionTokens
+      };
+    }
   }
 
   async start(port: number): Promise<void> {

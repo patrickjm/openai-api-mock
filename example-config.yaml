@@ -18,10 +18,6 @@ responses:
             role: "assistant"
             content: "Hello! I'm doing well, thank you for asking. How can I help you today?"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 20
-        total_tokens: 35
 
   - id: "fuzzy-help"
     matcher:
@@ -41,10 +37,6 @@ responses:
             role: "assistant"
             content: "I'd be happy to help! Could you please provide more details about what you need assistance with?"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 12
-        completion_tokens: 25
-        total_tokens: 37
 
   - id: "regex-code"
     matcher:
@@ -63,7 +55,3 @@ responses:
             role: "assistant"
             content: "I can help you with Python code! Here's a simple example:\n\n```python\nprint('Hello, World!')\n```"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 20
-        completion_tokens: 30
-        total_tokens: 50

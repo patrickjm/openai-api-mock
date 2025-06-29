@@ -12,6 +12,7 @@ A mock OpenAI API server for testing LLM applications. This tool allows you to d
 - 🔒 **API key validation** - Secure your mock API with custom keys
 - 📊 **OpenAI-compatible** - Drop-in replacement for OpenAI API endpoints
 - 🌊 **Streaming support** - Full SSE streaming compatibility
+- 🧮 **Automatic token calculation** - Real token counts using tiktoken library
 - 🪵 **Flexible logging** - Log to file or stdout with configurable verbosity
 - ⚡ **TypeScript first** - Written in TypeScript with full type safety
 
@@ -54,10 +55,6 @@ responses:
             role: "assistant"
             content: "Hello! I'm doing well, thank you for asking."
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
 ```
 
 2. Start the mock server:
@@ -179,10 +176,6 @@ responses:
             role: "assistant" 
             content: "Hello! I'm doing well, thank you for asking."
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
 
   - id: "help-request"
     matcher:
@@ -202,10 +195,6 @@ responses:
             role: "assistant"
             content: "I'd be happy to help! What do you need assistance with?"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 10
-        completion_tokens: 15
-        total_tokens: 25
 
   - id: "weather-info"
     matcher:
@@ -224,10 +213,6 @@ responses:
             role: "assistant"
             content: "The weather is nice today!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 10
-        completion_tokens: 8
-        total_tokens: 18
 
   - id: "non-debug-requests"
     matcher:
@@ -247,11 +232,27 @@ responses:
             role: "assistant"
             content: "This matches messages that don't contain 'debug'!"
           finish_reason: "stop"
-      usage:
-        prompt_tokens: 12
-        completion_tokens: 10
-        total_tokens: 22
 ```
+
+## Token Calculation
+
+The mock server automatically calculates accurate token counts for all responses using OpenAI's tiktoken library. Token usage is included in every response:
+
+```json
+{
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 12,
+    "total_tokens": 27
+  }
+}
+```
+
+- **Prompt tokens**: Calculated from the input messages
+- **Completion tokens**: Calculated from the response content
+- **Total tokens**: Sum of prompt and completion tokens
+
+The calculation uses the appropriate tokenizer for each model (e.g., gpt-3.5-turbo, gpt-4) to ensure accuracy.
 
 ## Supported Endpoints
 

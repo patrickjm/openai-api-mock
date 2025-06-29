@@ -1,6 +1,6 @@
 {
   "name": "openai-mock-api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "dist/index.js",
   "bin": {
     "openai-mock-api": "dist/cli.js"
@@ -37,6 +37,7 @@
     "commander": "^14.0.0",
     "express": "^5.1.0",
     "fuse.js": "^7.1.0",
+    "tiktoken": "^1.0.21",
     "winston": "^3.17.0",
     "yaml": "^2.8.0"
   },

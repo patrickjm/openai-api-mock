@@ -28,7 +28,6 @@ export interface OpenAIResponse {
   created: number;
   model: string;
   choices: Choice[];
-  usage: Usage;
 }
 
 export interface StreamChoice {
