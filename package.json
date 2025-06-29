@@ -1,6 +1,6 @@
 {
   "name": "openai-mock-api",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "bin": {
     "openai-mock-api": "./dist/cli.js"
@@ -16,9 +16,19 @@
     "docs:preview": "cd docs && npm run preview",
     "docs:install": "cd docs && npm install"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "openai",
+    "mock",
+    "api",
+    "testing",
+    "llm"
+  ],
+  "author": "patrickjm",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/patrickjm/openai-mock-api"
+  },
+  "license": "MIT",
   "description": "A mock OpenAI API server for testing LLM applications",
   "files": [
     "dist/**/*"
