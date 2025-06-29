@@ -1,0 +1,55 @@
+---
+title: OpenAI API Mock
+description: A mock OpenAI API server for testing LLM applications
+template: splash
+hero:
+  tagline: Test your LLM applications with predictable, configurable responses
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Get Started
+      link: /quick-start/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/patrickmoriarty/openai-api-mock
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Key Features
+
+<CardGrid stagger>
+	<Card title="NPX Runnable" icon="rocket">
+		Use directly with `npx openai-api-mock` - no global installation required.
+	</Card>
+	<Card title="Multiple Matching Strategies" icon="puzzle">
+		Support for exact, fuzzy, regex, and contains message matching with optional inversion.
+	</Card>
+	<Card title="OpenAI Compatible" icon="approve-check">
+		Drop-in replacement for OpenAI API endpoints with full streaming support.
+	</Card>
+	<Card title="YAML Configuration" icon="document">
+		Define responses with simple, readable YAML files.
+	</Card>
+	<Card title="TypeScript First" icon="seti:typescript">
+		Written in TypeScript with full type safety and excellent IDE support.
+	</Card>
+	<Card title="Flexible Logging" icon="information">
+		Log to file or stdout with configurable verbosity levels.
+	</Card>
+</CardGrid>
+
+## Quick Example
+
+```bash
+# Install and run
+npx openai-api-mock --config config.yaml
+
+# Use with your OpenAI client
+const openai = new OpenAI({
+  baseURL: 'http://localhost:3000/v1',
+  apiKey: 'your-test-key'
+});
+```
