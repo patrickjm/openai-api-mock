@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "bin": {
-    "openai-mock-api": "./dist/cli.js"
+    "openai-mock-api": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -26,7 +26,7 @@
   "author": "patrickjm",
   "repository": {
     "type": "git",
-    "url": "https://github.com/patrickjm/openai-mock-api"
+    "url": "git+https://github.com/patrickjm/openai-mock-api.git"
   },
   "license": "MIT",
   "description": "A mock OpenAI API server for testing LLM applications",
