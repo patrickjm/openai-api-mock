@@ -1,5 +1,7 @@
 # OpenAI Mock API
 
+![npm](https://img.shields.io/npm/v/openai-mock-api)
+
 A mock OpenAI API server for testing LLM applications. This tool allows you to define predictable responses to specific message patterns, making it easier to test your AI-powered applications without the variability of real LLM responses.
 
 ## Features
