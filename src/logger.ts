@@ -10,20 +10,14 @@ export class Logger {
       transports.push(
         new winston.transports.File({
           filename: logFile,
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-          ),
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
         })
       );
     }
 
     transports.push(
       new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.simple()
-        ),
+        format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
       })
     );
 

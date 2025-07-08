@@ -1,20 +1,23 @@
 import Fuse from 'fuse.js';
 import { MockResponse, ConversationMessage, ChatCompletionRequest } from './types';
-import { Logger } from './logger';
+import { ILogger } from './interfaces';
 
 export class MessageMatcherService {
-  constructor(private logger: Logger) {}
+  constructor(private logger: ILogger) {}
 
   // Matcher specificity scores (higher = more specific)
   private readonly MATCHER_SCORES: Record<string, number> = {
-    'exact': 1.0,
-    'regex': 0.8,
-    'contains': 0.6,
-    'fuzzy': 0.4,
-    'any': 0.1
+    exact: 1.0,
+    regex: 0.8,
+    contains: 0.6,
+    fuzzy: 0.4,
+    any: 0.1,
   };
 
-  findMatch(request: ChatCompletionRequest, responses: MockResponse[]): { response: MockResponse; matchedLength: number } | null {
+  findMatch(
+    request: ChatCompletionRequest,
+    responses: MockResponse[]
+  ): { response: MockResponse; matchedLength: number } | null {
     this.logger.debug('Finding match for request', {
       messageCount: request.messages.length,
       responseCount: responses.length,
@@ -25,11 +28,17 @@ export class MessageMatcherService {
     for (const response of responses) {
       const matchResult = this.isMatch(request.messages, response.messages);
       if (matchResult.isMatch) {
-        this.logger.debug(`Found match with response: ${response.id}, matched ${matchResult.matchedLength} messages, score: ${matchResult.score}`);
-        
+        this.logger.debug(
+          `Found match with response: ${response.id}, matched ${matchResult.matchedLength} messages, score: ${matchResult.score}`
+        );
+
         // Choose the match with the highest score (most specific)
         if (!bestMatch || matchResult.score > bestMatch.score) {
-          bestMatch = { response, matchedLength: matchResult.matchedLength, score: matchResult.score };
+          bestMatch = {
+            response,
+            matchedLength: matchResult.matchedLength,
+            score: matchResult.score,
+          };
         }
       }
     }
@@ -43,7 +52,10 @@ export class MessageMatcherService {
     return null;
   }
 
-  private isMatch(messages: ChatCompletionRequest['messages'], conversationFlow: ConversationMessage[]): { isMatch: boolean; matchedLength: number; score: number } {
+  private isMatch(
+    messages: ChatCompletionRequest['messages'],
+    conversationFlow: ConversationMessage[]
+  ): { isMatch: boolean; matchedLength: number; score: number } {
     // Support partial matching: incoming messages should match the beginning of the conversation flow
     if (messages.length > conversationFlow.length) {
       return { isMatch: false, matchedLength: 0, score: 0 };
@@ -70,7 +82,7 @@ export class MessageMatcherService {
 
       // Apply per-message matching
       const matcher = flowMessage.matcher || 'exact';
-      
+
       if (matcher === 'any') {
         // 'any' matcher accepts any message of the correct role
         matchedLength++;
@@ -82,7 +94,11 @@ export class MessageMatcherService {
       // All other matchers require content
       if (!incomingMessage.content || !flowMessage.content) {
         // Handle tool calls for tool messages
-        if (flowMessage.role === 'tool' && incomingMessage.tool_call_id && flowMessage.tool_call_id) {
+        if (
+          flowMessage.role === 'tool' &&
+          incomingMessage.tool_call_id &&
+          flowMessage.tool_call_id
+        ) {
           if (incomingMessage.tool_call_id === flowMessage.tool_call_id) {
             matchedLength++;
             matchedMessages++;
@@ -93,8 +109,13 @@ export class MessageMatcherService {
         return { isMatch: false, matchedLength: 0, score: 0 };
       }
 
-      const messageMatches = this.matchSingleMessage(incomingMessage.content, flowMessage.content, matcher, flowMessage.threshold);
-      
+      const messageMatches = this.matchSingleMessage(
+        incomingMessage.content,
+        flowMessage.content,
+        matcher,
+        flowMessage.threshold
+      );
+
       if (!messageMatches) {
         return { isMatch: false, matchedLength: 0, score: 0 };
       }
@@ -110,11 +131,16 @@ export class MessageMatcherService {
     return { isMatch: true, matchedLength, score: averageScore };
   }
 
-  private matchSingleMessage(incomingContent: string, patternContent: string, matcher: string, threshold?: number): boolean {
+  private matchSingleMessage(
+    incomingContent: string,
+    patternContent: string,
+    matcher: string,
+    threshold?: number
+  ): boolean {
     switch (matcher) {
       case 'exact':
         return incomingContent.trim() === patternContent.trim();
-      
+
       case 'fuzzy':
         const fuse = new Fuse([patternContent], {
           includeScore: true,
@@ -122,16 +148,16 @@ export class MessageMatcherService {
         });
 
         const result = fuse.search(incomingContent);
-        
+
         if (result.length === 0) {
           return false;
         }
-        
+
         const score = result[0].score || 0;
         const similarity = 1 - score; // Convert distance to similarity
-        
+
         return similarity >= (threshold || 0.8);
-      
+
       case 'regex':
         try {
           const regex = new RegExp(patternContent, 'i');
@@ -140,10 +166,10 @@ export class MessageMatcherService {
           this.logger.warn(`Invalid regex pattern: ${patternContent}`, error);
           return false;
         }
-      
+
       case 'contains':
         return incomingContent.toLowerCase().includes(patternContent.toLowerCase());
-      
+
       default:
         return false;
     }
@@ -151,14 +177,17 @@ export class MessageMatcherService {
 
   // Helper method to find the response for a partial match
   // For partial matching, we always return the final assistant response in the conversation flow
-  findResponseForMatch(conversationFlow: ConversationMessage[], matchedLength: number): ConversationMessage | null {
+  findResponseForMatch(
+    conversationFlow: ConversationMessage[],
+    matchedLength: number
+  ): ConversationMessage | null {
     // Always return the last assistant message in the conversation flow for partial matching
     for (let i = conversationFlow.length - 1; i >= 0; i--) {
       if (conversationFlow[i].role === 'assistant') {
         return conversationFlow[i];
       }
     }
-    
+
     return null;
   }
 }

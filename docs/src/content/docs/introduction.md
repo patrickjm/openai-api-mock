@@ -11,27 +11,27 @@ OpenAI Mock API is a mock server that mimics the OpenAI API. It returns configur
 
 ```yaml
 # config.yaml
-apiKey: "test-key"
+apiKey: 'test-key'
 port: 3000
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     matcher:
-      type: "contains"
-      pattern: "hello"
+      type: 'contains'
+      pattern: 'hello'
     response:
-      content: "Hello! How can I help you today?"
+      content: 'Hello! How can I help you today?'
 ```
 
 ```javascript
 // Your test code
 const openai = new OpenAI({
   baseURL: 'http://localhost:3000/v1',
-  apiKey: 'test-key'
+  apiKey: 'test-key',
 });
 
 const response = await openai.chat.completions.create({
   model: 'gpt-4',
-  messages: [{ role: 'user', content: 'Say hello!' }]
+  messages: [{ role: 'user', content: 'Say hello!' }],
 });
 // Returns: "Hello! How can I help you today?"
 ```
@@ -39,6 +39,7 @@ const response = await openai.chat.completions.create({
 ## Why use it
 
 Testing LLM applications is hard because:
+
 - Real API responses vary each time
 - API calls cost money and have rate limits
 - Network issues can break tests

@@ -23,23 +23,22 @@ async function main() {
   try {
     const logger = new Logger(options.logFile, options.verbose);
     const configLoader = new ConfigLoader(logger);
-    
+
     // If no config specified, try to read from stdin
     const configPath = options.config || '-';
     const config = await configLoader.load(configPath);
-    
+
     const server = new MockServer(config, logger);
     const port = parseInt(options.port) || config.port || 3000;
-    
+
     await server.start(port);
     logger.info(`Mock OpenAI API server started on port ${port}`);
-    
+
     process.on('SIGINT', async () => {
       logger.info('Shutting down server...');
       await server.stop();
       process.exit(0);
     });
-    
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

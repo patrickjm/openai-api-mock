@@ -1,262 +1,273 @@
 ---
-title: Response Format
-description: Learn how to configure OpenAI-compatible responses
+title: Response Configuration
+description: Learn how to configure conversation flows and responses
 ---
 
-# Response Format
+# Response Configuration
 
-OpenAI Mock API returns responses that match the OpenAI API format exactly, ensuring compatibility with existing client libraries.
+OpenAI Mock API uses a conversation-first approach where you define complete conversation flows. The system automatically generates OpenAI-compatible responses based on the final assistant message in each flow.
 
 ## Basic Response Structure
 
 ```yaml
-response:
-  id: "chatcmpl-unique-id"
-  object: "chat.completion"
-  created: 1677649420
-  model: "gpt-3.5-turbo"
-  choices:
-    - index: 0
-      message:
-        role: "assistant"
-        content: "Your response content here"
-      finish_reason: "stop"
-  usage:
-    prompt_tokens: 15
-    completion_tokens: 12
-    total_tokens: 27
+responses:
+  - id: 'greeting'
+    messages:
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
+        content: 'Hello! I am doing well, thank you for asking.'
+```
+
+This automatically generates a complete OpenAI-compatible response:
+
+```json
+{
+  "id": "chatcmpl-greeting",
+  "object": "chat.completion",
+  "created": 1677649420,
+  "model": "gpt-3.5-turbo",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! I am doing well, thank you for asking."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 12,
+    "total_tokens": 27
+  }
+}
 ```
 
 ## Response Fields
 
-### Required Fields
+### Automatically Generated Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the completion |
-| `object` | string | Always "chat.completion" |
-| `created` | number | Unix timestamp of creation |
-| `model` | string | Model identifier (returned as-is) |
-| `choices` | array | Array of completion choices |
-| `usage` | object | Token usage information |
+The system automatically generates these OpenAI-compatible fields:
 
-### Choice Object
+| Field     | Description                          | Value                      |
+| --------- | ------------------------------------ | -------------------------- |
+| `id`      | Unique identifier for the completion | `chatcmpl-{response-id}`   |
+| `object`  | Response type                        | `"chat.completion"`        |
+| `created` | Unix timestamp of creation           | Current timestamp          |
+| `model`   | Model identifier                     | From request or default    |
+| `choices` | Array of completion choices          | Single choice with message |
+| `usage`   | Token usage information              | Calculated automatically   |
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `index` | number | Choice index (usually 0) |
-| `message` | object | The response message |
-| `finish_reason` | string | Why the completion finished |
+### Token Calculation
 
-### Message Object
+Token counts are automatically calculated using OpenAI's tiktoken library:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `role` | string | Always "assistant" for responses |
-| `content` | string | The actual response text |
+- **Prompt tokens**: Calculated from input messages
+- **Completion tokens**: Calculated from assistant response content
+- **Total tokens**: Sum of prompt and completion tokens
 
-### Usage Object
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `prompt_tokens` | number | Tokens in the input |
-| `completion_tokens` | number | Tokens in the output |
-| `total_tokens` | number | Sum of prompt and completion tokens |
-
-## Common Finish Reasons
-
-- `"stop"` - Natural completion
-- `"length"` - Hit token limit
-- `"function_call"` - Function call (not commonly used in mock)
-- `"content_filter"` - Content was filtered
-
-## Examples
+## Configuration Examples
 
 ### Simple Response
-```yaml
-response:
-  id: "chatcmpl-simple"
-  object: "chat.completion"
-  created: 1677649420
-  model: "gpt-3.5-turbo"
-  choices:
-    - index: 0
-      message:
-        role: "assistant"
-        content: "Hello! How can I help you today?"
-      finish_reason: "stop"
-  usage:
-    prompt_tokens: 10
-    completion_tokens: 9
-    total_tokens: 19
-```
-
-### Multi-line Response
-```yaml
-response:
-  id: "chatcmpl-multiline"
-  object: "chat.completion"
-  created: 1677649420
-  model: "gpt-4"
-  choices:
-    - index: 0
-      message:
-        role: "assistant"
-        content: |
-          Here's a multi-line response:
-          
-          1. First point
-          2. Second point
-          3. Third point
-          
-          I hope this helps!
-      finish_reason: "stop"
-  usage:
-    prompt_tokens: 15
-    completion_tokens: 25
-    total_tokens: 40
-```
-
-### Code Response
-```yaml
-response:
-  id: "chatcmpl-code"
-  object: "chat.completion"  
-  created: 1677649420
-  model: "gpt-4"
-  choices:
-    - index: 0
-      message:
-        role: "assistant"
-        content: |
-          Here's a Python example:
-          
-          ```python
-          def hello_world():
-              print("Hello, World!")
-          
-          hello_world()
-          ```
-      finish_reason: "stop"
-  usage:
-    prompt_tokens: 8
-    completion_tokens: 22
-    total_tokens: 30
-```
-
-### Error Response
-```yaml
-response:
-  id: "chatcmpl-error"
-  object: "chat.completion"
-  created: 1677649420
-  model: "gpt-3.5-turbo"
-  choices:
-    - index: 0
-      message:
-        role: "assistant"
-        content: "I'm sorry, I can't help with that request."
-      finish_reason: "content_filter"
-  usage:
-    prompt_tokens: 12
-    completion_tokens: 10
-    total_tokens: 22
-```
-
-## Advanced Features
-
-### Dynamic Timestamps
-Use the current timestamp for more realistic responses:
-
-```yaml
-# Note: This shows the format - the mock uses static values
-response:
-  id: "chatcmpl-dynamic"
-  object: "chat.completion"
-  created: 1677649420  # Static timestamp
-  # ... rest of response
-```
-
-### Model Variations
-Different models for different response types:
 
 ```yaml
 responses:
-  - id: "quick-answer"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "quick"
-    response:
-      model: "gpt-3.5-turbo"  # Faster model for simple queries
-      # ... rest of response
-
-  - id: "complex-analysis"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "analyze"
-    response:
-      model: "gpt-4"  # More capable model for complex tasks
-      # ... rest of response
+  - id: 'greeting'
+    messages:
+      - role: 'user'
+        content: 'Hello'
+      - role: 'assistant'
+        content: 'Hello! How can I help you today?'
 ```
 
-### Token Usage Patterns
-Realistic token counts for different response types:
+### Multi-line Response
 
 ```yaml
-# Short responses
-usage:
-  prompt_tokens: 10
-  completion_tokens: 5
-  total_tokens: 15
+responses:
+  - id: 'help-guide'
+    messages:
+      - role: 'user'
+        content: 'I need help'
+        matcher: 'fuzzy'
+        threshold: 0.8
+      - role: 'assistant'
+        content: |
+          I'd be happy to help! Here are some things I can assist with:
 
-# Medium responses  
-usage:
-  prompt_tokens: 25
-  completion_tokens: 35
-  total_tokens: 60
+          1. General questions and information
+          2. Problem-solving and troubleshooting
+          3. Code examples and explanations
+          4. Creative writing and brainstorming
 
-# Long responses
-usage:
-  prompt_tokens: 50
-  completion_tokens: 150
-  total_tokens: 200
+          What specific help do you need?
+```
+
+### Code Response
+
+```yaml
+responses:
+  - id: 'python-example'
+    messages:
+      - role: 'user'
+        content: 'python'
+        matcher: 'contains'
+      - role: 'assistant'
+        content: |
+          Here's a Python example:
+
+          ```python
+          def hello_world():
+              print("Hello, World!")
+
+          hello_world()
+          ```
+
+          This function prints a greeting message.
+```
+
+### Multi-Turn Conversation
+
+```yaml
+responses:
+  - id: 'booking-flow'
+    messages:
+      - role: 'user'
+        content: 'I want to book a table'
+      - role: 'assistant'
+        content: 'I can help you book a table! How many people will be dining?'
+      - role: 'user'
+        content: '4 people'
+      - role: 'assistant'
+        content: 'Perfect! For 4 people. What time would you prefer?'
+```
+
+### Tool Call Response
+
+```yaml
+responses:
+  - id: 'weather-tool'
+    messages:
+      - role: 'user'
+        content: 'weather in San Francisco'
+        matcher: 'contains'
+      - role: 'assistant'
+        tool_calls:
+          - id: 'call_abc123'
+            type: 'function'
+            function:
+              name: 'get_weather'
+              arguments: '{"location": "San Francisco"}'
+      - role: 'tool'
+        tool_call_id: 'call_abc123'
+        content: '{"temperature": 72, "condition": "sunny"}'
+      - role: 'assistant'
+        content: "It's currently 72°F and sunny in San Francisco!"
+```
+
+## Conversation Flow Features
+
+### Partial Matching
+
+All conversation flows support partial matching. If the incoming conversation matches the beginning of a flow, it returns the final assistant response:
+
+```yaml
+responses:
+  - id: 'multi-turn-flow'
+    messages:
+      - role: 'user'
+        content: 'Start conversation'
+      - role: 'assistant'
+        content: 'Hello! How can I help you?'
+      - role: 'user'
+        content: 'Tell me about the weather'
+      - role: 'assistant'
+        content: 'The weather is sunny today!'
+```
+
+This matches:
+- Just `["Start conversation"]` → Returns: `"The weather is sunny today!"`
+- `["Start conversation", "Hello! How can I help you?"]` → Returns: `"The weather is sunny today!"`
+- Full conversation → Returns: `"The weather is sunny today!"`
+
+### Flexible Matching
+
+Use different matcher types for natural conversation handling:
+
+```yaml
+responses:
+  - id: 'flexible-help'
+    messages:
+      - role: 'user'
+        content: 'I need assistance'
+        matcher: 'fuzzy'
+        threshold: 0.7
+      - role: 'assistant'
+        content: 'I can help you! What do you need assistance with?'
+
+  - id: 'any-question'
+    messages:
+      - role: 'user'
+        matcher: 'any'
+      - role: 'assistant'
+        content: 'Thanks for your question! Let me help you with that.'
 ```
 
 ## Best Practices
 
-### Realistic Token Counts
-Make token counts proportional to content length:
-- ~4 characters per token for English text
-- Code typically has fewer tokens per character
-- Include reasonable prompt token estimates
+### Response Content
 
-### Consistent IDs
-Use descriptive but unique completion IDs:
+1. **Natural Language**: Write responses as if they came from a real AI assistant
+2. **Helpful Format**: Use markdown, lists, and code blocks where appropriate
+3. **Consistent Tone**: Maintain a helpful, professional tone across responses
 
-```yaml
-# Good patterns
-id: "chatcmpl-greeting-001"
-id: "chatcmpl-help-python"
-id: "chatcmpl-weather-20231201"
+### Conversation Design
 
-# Avoid
-id: "test"
-id: "response1"  
-id: "abc123"
+1. **Realistic Flows**: Design conversation flows that match real user interactions
+2. **Appropriate Length**: Keep responses reasonably sized for your use case
+3. **Clear Progression**: Each turn should logically follow from the previous
+
+### Organization
+
+1. **Descriptive IDs**: Use clear, descriptive IDs for your responses
+2. **Logical Order**: Order responses from most specific to most general
+3. **Consistent Patterns**: Use similar patterns across related responses
+
+### Testing Considerations
+
+1. **Edge Cases**: Include responses for error conditions and edge cases
+2. **Fallback Responses**: Add catch-all responses for unmatched requests
+3. **Realistic Scenarios**: Test with actual conversation patterns from your application
+
+## Error Handling
+
+If no response matches the incoming conversation, the server returns a 400 error:
+
+```json
+{
+  "error": {
+    "message": "No matching response found for the given conversation",
+    "type": "invalid_request_error",
+    "code": "no_match"
+  }
+}
 ```
 
-### Appropriate Finish Reasons
-- Use `"stop"` for most normal completions
-- Use `"length"` only for very long responses
-- Use `"content_filter"` for error/rejection responses
+To handle this, add a catch-all response:
 
-### Model Names
-Use realistic OpenAI model names:
-- `"gpt-3.5-turbo"`
-- `"gpt-4"`
-- `"gpt-4-turbo-preview"`
-- Custom names are allowed but may confuse clients
+```yaml
+responses:
+  # ... your specific responses ...
+  
+  # Catch-all (place last)
+  - id: 'fallback'
+    messages:
+      - role: 'user'
+        content: '.*'
+        matcher: 'regex'
+      - role: 'assistant'
+        content: 'I apologize, but I do not understand that request. Could you please rephrase it?'
+```
+
+This conversation-first approach makes it easy to design realistic test scenarios while automatically handling all the OpenAI API compatibility details.

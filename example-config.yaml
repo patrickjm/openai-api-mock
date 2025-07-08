@@ -1,57 +1,57 @@
-apiKey: "test-api-key-12345"
+apiKey: 'test-api-key-12345'
 port: 3000
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     matcher:
-      type: "exact"
+      type: 'exact'
       messages:
-        - role: "user"
-          content: "Hello, how are you?"
+        - role: 'user'
+          content: 'Hello, how are you?'
     response:
-      id: "chatcmpl-example1"
-      object: "chat.completion"
+      id: 'chatcmpl-example1'
+      object: 'chat.completion'
       created: 1677649420
-      model: "gpt-3.5-turbo"
+      model: 'gpt-3.5-turbo'
       choices:
         - index: 0
           message:
-            role: "assistant"
+            role: 'assistant'
             content: "Hello! I'm doing well, thank you for asking. How can I help you today?"
-          finish_reason: "stop"
+          finish_reason: 'stop'
 
-  - id: "fuzzy-help"
+  - id: 'fuzzy-help'
     matcher:
-      type: "fuzzy"
+      type: 'fuzzy'
       threshold: 0.7
       messages:
-        - role: "user"
-          content: "I need help with something"
+        - role: 'user'
+          content: 'I need help with something'
     response:
-      id: "chatcmpl-example2"
-      object: "chat.completion"
+      id: 'chatcmpl-example2'
+      object: 'chat.completion'
       created: 1677649420
-      model: "gpt-3.5-turbo"
+      model: 'gpt-3.5-turbo'
       choices:
         - index: 0
           message:
-            role: "assistant"
+            role: 'assistant'
             content: "I'd be happy to help! Could you please provide more details about what you need assistance with?"
-          finish_reason: "stop"
+          finish_reason: 'stop'
 
-  - id: "regex-code"
+  - id: 'regex-code'
     matcher:
-      type: "regex"
+      type: 'regex'
       messages:
-        - role: "user"
-          content: ".*code.*python.*"
+        - role: 'user'
+          content: '.*code.*python.*'
     response:
-      id: "chatcmpl-example3"
-      object: "chat.completion"
+      id: 'chatcmpl-example3'
+      object: 'chat.completion'
       created: 1677649420
-      model: "gpt-4"
+      model: 'gpt-4'
       choices:
         - index: 0
           message:
-            role: "assistant"
+            role: 'assistant'
             content: "I can help you with Python code! Here's a simple example:\n\n```python\nprint('Hello, World!')\n```"
-          finish_reason: "stop"
+          finish_reason: 'stop'

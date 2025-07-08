@@ -72,28 +72,28 @@ responses:
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'Hello, how are you?' }],
     });
-    expect(response1.choices[0].message.content).toBe("This is the SPECIFIC greeting response");
+    expect(response1.choices[0].message.content).toBe('This is the SPECIFIC greeting response');
 
     // Test 2: Regex should win over 'any' and 'contains'
     const response2 = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'Well hello there!' }],
     });
-    expect(response2.choices[0].message.content).toBe("This is the REGEX hello response");
+    expect(response2.choices[0].message.content).toBe('This is the REGEX hello response');
 
     // Test 3: Contains should win over 'any'
     const response3 = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'hello' }],
     });
-    expect(response3.choices[0].message.content).toBe("This is the REGEX hello response"); // Regex also matches
+    expect(response3.choices[0].message.content).toBe('This is the REGEX hello response'); // Regex also matches
 
     // Test 4: Only 'any' matches
     const response4 = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'Something completely different' }],
     });
-    expect(response4.choices[0].message.content).toBe("This is the ANY matcher response");
+    expect(response4.choices[0].message.content).toBe('This is the ANY matcher response');
   });
 
   test('should handle tie-breaking when scores are equal', async () => {
@@ -135,7 +135,7 @@ responses:
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'hello world' }],
     });
-    expect(response.choices[0].message.content).toBe("First contains response");
+    expect(response.choices[0].message.content).toBe('First contains response');
   });
 
   test('should correctly score multi-turn conversations', async () => {
@@ -184,9 +184,9 @@ responses:
       messages: [
         { role: 'user', content: 'Start' },
         { role: 'assistant', content: 'First response' },
-        { role: 'user', content: 'Continue' }
+        { role: 'user', content: 'Continue' },
       ],
     });
-    expect(response.choices[0].message.content).toBe("Specific conversation response");
+    expect(response.choices[0].message.content).toBe('Specific conversation response');
   });
 });

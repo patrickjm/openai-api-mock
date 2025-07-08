@@ -1,7 +1,8 @@
 {
   "name": "openai-mock-api",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "openai-mock-api": "dist/cli.js"
   },
@@ -9,7 +10,8 @@
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
     "test": "jest",
-    "lint": "eslint src/**/*.ts",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "docs:dev": "cd docs && npm run dev",
     "docs:build": "cd docs && npm run build",
@@ -47,9 +49,11 @@
     "@types/node": "^24.0.7",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
+    "axios": "^1.10.0",
     "eslint": "^9.30.0",
     "jest": "^30.0.3",
     "openai": "^5.8.2",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

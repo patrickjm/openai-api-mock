@@ -65,14 +65,14 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'Hello, how are you?' }],
       });
-      expect(response1.choices[0].message.content).toBe("This is the SPECIFIC greeting response");
+      expect(response1.choices[0].message.content).toBe('This is the SPECIFIC greeting response');
 
       // Test 2: Contains match correctly wins over 'any'
       const response2 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'hello world' }],
       });
-      expect(response2.choices[0].message.content).toBe("This is the CONTAINS hello response");
+      expect(response2.choices[0].message.content).toBe('This is the CONTAINS hello response');
     });
 
     test('should work correctly when any matcher is placed last', async () => {
@@ -121,21 +121,21 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'Hello, how are you?' }],
       });
-      expect(response1.choices[0].message.content).toBe("This is the SPECIFIC greeting response");
+      expect(response1.choices[0].message.content).toBe('This is the SPECIFIC greeting response');
 
       // Test 2: Contains match correctly matches
       const response2 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'hello world' }],
       });
-      expect(response2.choices[0].message.content).toBe("This is the CONTAINS hello response");
+      expect(response2.choices[0].message.content).toBe('This is the CONTAINS hello response');
 
       // Test 3: Unmatched content falls back to 'any'
       const response3 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'something completely different' }],
       });
-      expect(response3.choices[0].message.content).toBe("This is the ANY matcher response");
+      expect(response3.choices[0].message.content).toBe('This is the ANY matcher response');
     });
   });
 
@@ -186,9 +186,9 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'What is the weather today?' }],
       });
-      
+
       // Exact match wins due to higher score
-      expect(response.choices[0].message.content).toBe("Exact weather response");
+      expect(response.choices[0].message.content).toBe('Exact weather response');
     });
   });
 
@@ -223,8 +223,8 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: '' }],
       });
-      
-      expect(response.choices[0].message.content).toBe("Response to any message including empty");
+
+      expect(response.choices[0].message.content).toBe('Response to any message including empty');
     });
 
     test('should handle very long messages with contains matcher', async () => {
@@ -259,8 +259,8 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: longMessage }],
       });
-      
-      expect(response.choices[0].message.content).toBe("Found the important keyword");
+
+      expect(response.choices[0].message.content).toBe('Found the important keyword');
     });
 
     test('should handle case sensitivity in contains matcher', async () => {
@@ -296,8 +296,8 @@ responses:
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: testCase }],
         });
-        
-        expect(response.choices[0].message.content).toBe("Found hello");
+
+        expect(response.choices[0].message.content).toBe('Found hello');
       }
     });
 
@@ -332,8 +332,8 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: 'The price is $123.45' }],
       });
-      
-      expect(response.choices[0].message.content).toBe("Found price pattern");
+
+      expect(response.choices[0].message.content).toBe('Found price pattern');
     });
 
     test('should handle multi-turn conversations with mixed matchers', async () => {
@@ -374,21 +374,19 @@ responses:
       // Test partial match at different points
       const response1 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'user', content: 'start the process' }
-        ],
+        messages: [{ role: 'user', content: 'start the process' }],
       });
-      expect(response1.choices[0].message.content).toBe("Ending conversation");
+      expect(response1.choices[0].message.content).toBe('Ending conversation');
 
       const response2 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
           { role: 'user', content: 'start the process' },
           { role: 'assistant', content: 'Starting conversation' },
-          { role: 'user', content: 'anything at all' }
+          { role: 'user', content: 'anything at all' },
         ],
       });
-      expect(response2.choices[0].message.content).toBe("Ending conversation");
+      expect(response2.choices[0].message.content).toBe('Ending conversation');
 
       const response3 = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
@@ -397,11 +395,10 @@ responses:
           { role: 'assistant', content: 'Starting conversation' },
           { role: 'user', content: 'anything at all' },
           { role: 'assistant', content: 'Continuing with any input' },
-          { role: 'user', content: 'please end this' }
+          { role: 'user', content: 'please end this' },
         ],
       });
-      expect(response3.choices[0].message.content).toBe("Ending conversation");
+      expect(response3.choices[0].message.content).toBe('Ending conversation');
     });
   });
-
 });

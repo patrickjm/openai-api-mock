@@ -32,6 +32,7 @@ try {
 ```
 
 **Error Response Format**:
+
 ```json
 {
   "error": {
@@ -53,7 +54,7 @@ try {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer test-key',
+      Authorization: 'Bearer test-key',
     },
     body: JSON.stringify({
       // Missing required 'model' field
@@ -66,6 +67,7 @@ try {
 ```
 
 **Error Response Format**:
+
 ```json
 {
   "error": {
@@ -84,7 +86,7 @@ try {
 try {
   await fetch('http://localhost:3000/v1/unsupported-endpoint', {
     method: 'GET',
-    headers: { 'Authorization': 'Bearer test-key' },
+    headers: { Authorization: 'Bearer test-key' },
   });
 } catch (error) {
   // Will receive 404 error
@@ -98,12 +100,12 @@ try {
 ```yaml
 # If your config only has this response:
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     matcher:
-      type: "exact"
+      type: 'exact'
       messages:
-        - role: "user"
-          content: "Hello"
+        - role: 'user'
+          content: 'Hello'
     response:
       # ... response config
 ```
@@ -173,13 +175,13 @@ describe('Request Validation', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-key',
+          Authorization: 'Bearer test-key',
         },
         body: JSON.stringify({
           // Missing model field
           messages: [{ role: 'user', content: 'Hello' }],
         }),
-      }).then(res => res.json())
+      }).then((res) => res.json())
     ).resolves.toMatchObject({
       error: {
         type: 'invalid_request_error',
@@ -194,13 +196,13 @@ describe('Request Validation', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-key',
+          Authorization: 'Bearer test-key',
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
           // Missing messages field
         }),
-      }).then(res => res.json())
+      }).then((res) => res.json())
     ).resolves.toMatchObject({
       error: {
         type: 'invalid_request_error',
@@ -252,23 +254,23 @@ describe('Response Matching', () => {
 
 ```yaml
 responses:
-  - id: "content-filter-simulation"
+  - id: 'content-filter-simulation'
     matcher:
-      type: "contains"
+      type: 'contains'
       messages:
-        - role: "user"
-          content: "inappropriate"
+        - role: 'user'
+          content: 'inappropriate'
     response:
-      id: "chatcmpl-filtered"
-      object: "chat.completion"
+      id: 'chatcmpl-filtered'
+      object: 'chat.completion'
       created: 1677649420
-      model: "gpt-3.5-turbo"
+      model: 'gpt-3.5-turbo'
       choices:
         - index: 0
           message:
-            role: "assistant"
+            role: 'assistant'
             content: "I can't assist with that request."
-          finish_reason: "content_filter"  # Indicates content was filtered
+          finish_reason: 'content_filter' # Indicates content was filtered
       usage:
         prompt_tokens: 8
         completion_tokens: 8
@@ -293,23 +295,23 @@ While the mock doesn't implement actual rate limiting, you can simulate rate lim
 
 ```yaml
 responses:
-  - id: "rate-limit-simulation"
+  - id: 'rate-limit-simulation'
     matcher:
-      type: "contains"
+      type: 'contains'
       messages:
-        - role: "user"
-          content: "rate limit test"
+        - role: 'user'
+          content: 'rate limit test'
     response:
-      id: "chatcmpl-rate-limited"
-      object: "chat.completion"
+      id: 'chatcmpl-rate-limited'
+      object: 'chat.completion'
       created: 1677649420
-      model: "gpt-3.5-turbo"
+      model: 'gpt-3.5-turbo'
       choices:
         - index: 0
           message:
-            role: "assistant"
-            content: "Request rate limit exceeded. Please try again later."
-          finish_reason: "stop"
+            role: 'assistant'
+            content: 'Request rate limit exceeded. Please try again later.'
+          finish_reason: 'stop'
       usage:
         prompt_tokens: 8
         completion_tokens: 12
@@ -334,9 +336,9 @@ class ResilientChatService {
         return response.choices[0].message.content;
       } catch (error) {
         if (attempt === maxRetries) throw error;
-        
+
         // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
     throw new Error('All retry attempts failed');
@@ -347,10 +349,10 @@ class ResilientChatService {
 describe('Error Recovery', () => {
   test('should retry on failure and eventually succeed', async () => {
     const service = new ResilientChatService(openai);
-    
+
     // Configure mock to fail first few times, then succeed
     // This would require more sophisticated mock setup
-    
+
     const result = await service.sendMessageWithRetry('Hello');
     expect(result).toBeDefined();
   });
@@ -378,16 +380,16 @@ class ChatServiceWithFallback {
 
   private getFallbackResponse(message: string): string {
     if (message.toLowerCase().includes('hello')) {
-      return 'Hello! I apologize, but I\'m experiencing technical difficulties.';
+      return "Hello! I apologize, but I'm experiencing technical difficulties.";
     }
-    return 'I\'m sorry, I\'m unable to process your request at the moment.';
+    return "I'm sorry, I'm unable to process your request at the moment.";
   }
 }
 
 // Test graceful degradation
 test('should provide fallback when API fails', async () => {
   const service = new ChatServiceWithFallback(openai);
-  
+
   // This message won't match any configured responses
   const result = await service.getResponse('unmatched message');
   expect(result).toContain('unable to process');
@@ -459,9 +461,9 @@ class MetricsCollector {
   }
 
   getMetrics() {
-    const totalRequests = this.successCount + 
-      Array.from(this.errorCounts.values()).reduce((a, b) => a + b, 0);
-    
+    const totalRequests =
+      this.successCount + Array.from(this.errorCounts.values()).reduce((a, b) => a + b, 0);
+
     return {
       successRate: this.successCount / totalRequests,
       errorBreakdown: Object.fromEntries(this.errorCounts),

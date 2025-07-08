@@ -16,6 +16,7 @@ npx openai-mock-api --config config.yaml
 ```
 
 This downloads and runs the latest version directly. Perfect for:
+
 - Quick testing and prototyping
 - CI/CD environments
 - One-off usage
@@ -79,7 +80,7 @@ services:
     image: node:18-alpine
     command: sh -c "npm install -g openai-mock-api && openai-mock-api --config /config/config.yaml"
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./config.yaml:/config/config.yaml
 ```
@@ -126,12 +127,16 @@ npm run dev -- --config example-config.yaml
 ## Troubleshooting
 
 ### Command Not Found
+
 If you get "command not found" after global installation:
+
 - Ensure npm's global bin directory is in your PATH
 - Try `npm list -g openai-mock-api` to verify installation
 
 ### Permission Issues
+
 On Unix systems, you might need sudo for global installation:
+
 ```bash
 sudo npm install -g openai-mock-api
 ```
@@ -139,12 +144,15 @@ sudo npm install -g openai-mock-api
 Or use a Node version manager like nvm to avoid permission issues.
 
 ### Port Already in Use
+
 If port 3000 is busy:
+
 ```bash
 openai-mock-api --config config.yaml --port 3001
 ```
 
 Or specify port in your config file:
+
 ```yaml
 port: 3001
 # ... rest of config

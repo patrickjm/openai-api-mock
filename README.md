@@ -37,14 +37,14 @@ npx openai-mock-api --config config.yaml
 1. Create a configuration file (`config.yaml`):
 
 ```yaml
-apiKey: "your-test-api-key"
+apiKey: 'your-test-api-key'
 port: 3000
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     messages:
-      - role: "user"
-        content: "Hello, how are you?"
-      - role: "assistant"
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
         content: "Hello! I'm doing well, thank you for asking."
 ```
 
@@ -100,72 +100,77 @@ The configuration format is conversation-first, where each response is defined a
 ### Matcher Types
 
 #### Exact Match (Default)
+
 Messages are matched exactly as specified. This is the default behavior when no `matcher` field is provided:
 
 ```yaml
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     messages:
-      - role: "user"
-        content: "Hello, how are you?"
-      - role: "assistant"
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
         content: "Hello! I'm doing well, thank you for asking."
 ```
 
 #### Fuzzy Match
+
 Matches messages with similarity scoring:
 
 ```yaml
 responses:
-  - id: "help-request"
+  - id: 'help-request'
     messages:
-      - role: "user"
-        content: "I need help with something"
-        matcher: "fuzzy"
-        threshold: 0.8  # 0.0-1.0, higher = more similar required
-      - role: "assistant"
+      - role: 'user'
+        content: 'I need help with something'
+        matcher: 'fuzzy'
+        threshold: 0.8 # 0.0-1.0, higher = more similar required
+      - role: 'assistant'
         content: "I'd be happy to help!"
 ```
 
 #### Regex Match
+
 Matches messages using regular expressions:
 
 ```yaml
 responses:
-  - id: "code-request"
+  - id: 'code-request'
     messages:
-      - role: "user"
-        content: ".*code.*python.*"  # Matches any message containing "code" and "python"
-        matcher: "regex"
-      - role: "assistant"
+      - role: 'user'
+        content: '.*code.*python.*' # Matches any message containing "code" and "python"
+        matcher: 'regex'
+      - role: 'assistant'
         content: "Here's some Python code for you!"
 ```
 
 #### Contains Match
+
 Matches messages that contain the specified substring (case-insensitive):
 
 ```yaml
 responses:
-  - id: "weather-info"
+  - id: 'weather-info'
     messages:
-      - role: "user"
-        content: "weather"  # Matches any message containing "weather"
-        matcher: "contains"
-      - role: "assistant"
-        content: "The weather is nice today!"
+      - role: 'user'
+        content: 'weather' # Matches any message containing "weather"
+        matcher: 'contains'
+      - role: 'assistant'
+        content: 'The weather is nice today!'
 ```
 
 #### Any Match
+
 Matches any message of the specified role, enabling flexible conversation flows:
 
 ```yaml
 responses:
-  - id: "flexible-flow"
+  - id: 'flexible-flow'
     messages:
-      - role: "user"
-        matcher: "any"  # No content field needed
-      - role: "assistant"
-        content: "Thanks for your message!"
+      - role: 'user'
+        matcher: 'any' # No content field needed
+      - role: 'assistant'
+        content: 'Thanks for your message!'
 ```
 
 ### Conversation Flows and Partial Matching
@@ -174,19 +179,20 @@ All responses support **partial conversation matching**. If the incoming convers
 
 ```yaml
 responses:
-  - id: "conversation-flow"
+  - id: 'conversation-flow'
     messages:
-      - role: "user"
-        content: "Start conversation"
-      - role: "assistant"
-        content: "Hello! How can I help you?"
-      - role: "user"
-        content: "Tell me about the weather"
-      - role: "assistant"
-        content: "The weather is sunny today!"
+      - role: 'user'
+        content: 'Start conversation'
+      - role: 'assistant'
+        content: 'Hello! How can I help you?'
+      - role: 'user'
+        content: 'Tell me about the weather'
+      - role: 'assistant'
+        content: 'The weather is sunny today!'
 ```
 
 This will match:
+
 - Just `["Start conversation"]` → Returns: `"The weather is sunny today!"`
 - `["Start conversation", "Hello! How can I help you?"]` → Returns: `"The weather is sunny today!"`
 - Full 3-message conversation → Returns: `"The weather is sunny today!"`
@@ -197,68 +203,68 @@ The configuration format supports OpenAI tool calls in conversation flows:
 
 ```yaml
 responses:
-  - id: "weather-tool-flow"
+  - id: 'weather-tool-flow'
     messages:
-      - role: "user"
-        content: "weather"
-        matcher: "contains"
-      - role: "assistant"
+      - role: 'user'
+        content: 'weather'
+        matcher: 'contains'
+      - role: 'assistant'
         tool_calls:
-          - id: "call_abc123"
-            type: "function"
+          - id: 'call_abc123'
+            type: 'function'
             function:
-              name: "get_weather"
+              name: 'get_weather'
               arguments: '{"location": "San Francisco"}'
-      - role: "tool"
-        matcher: "any"
-        tool_call_id: "call_abc123"
-      - role: "assistant"
+      - role: 'tool'
+        matcher: 'any'
+        tool_call_id: 'call_abc123'
+      - role: 'assistant'
         content: "It's sunny in San Francisco!"
 ```
 
 ### Full Configuration Example
 
 ```yaml
-apiKey: "test-api-key-12345"
+apiKey: 'test-api-key-12345'
 port: 3000
 responses:
-  - id: "greeting"
+  - id: 'greeting'
     messages:
-      - role: "user"
-        content: "Hello, how are you?"
-      - role: "assistant"
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
         content: "Hello! I'm doing well, thank you for asking."
 
-  - id: "help-request"
+  - id: 'help-request'
     messages:
-      - role: "user"
-        content: "I need help"
-        matcher: "fuzzy"
+      - role: 'user'
+        content: 'I need help'
+        matcher: 'fuzzy'
         threshold: 0.7
-      - role: "assistant"
+      - role: 'assistant'
         content: "I'd be happy to help! What do you need assistance with?"
 
-  - id: "weather-info"
+  - id: 'weather-info'
     messages:
-      - role: "user"
-        content: "weather"
-        matcher: "contains"
-      - role: "assistant"
-        content: "The weather is nice today!"
+      - role: 'user'
+        content: 'weather'
+        matcher: 'contains'
+      - role: 'assistant'
+        content: 'The weather is nice today!'
 
-  - id: "complex-conversation"
+  - id: 'complex-conversation'
     messages:
-      - role: "system"
-        matcher: "any"
-      - role: "user"
-        content: ".*help.*"
-        matcher: "regex"
-      - role: "assistant"
-        content: "How can I assist you today?"
-      - role: "user"
-        matcher: "any"
-      - role: "assistant"
-        content: "Thanks for using our service!"
+      - role: 'system'
+        matcher: 'any'
+      - role: 'user'
+        content: '.*help.*'
+        matcher: 'regex'
+      - role: 'assistant'
+        content: 'How can I assist you today?'
+      - role: 'user'
+        matcher: 'any'
+      - role: 'assistant'
+        content: 'Thanks for using our service!'
 ```
 
 ## Token Calculation
@@ -276,7 +282,7 @@ The mock server automatically calculates token counts for all responses using Op
 ```
 
 - **Prompt tokens**: Calculated from the input messages
-- **Completion tokens**: Calculated from the response content  
+- **Completion tokens**: Calculated from the response content
 - **Total tokens**: Sum of prompt and completion tokens
 
 For simplicity in the mock environment, all calculations use the `cl100k_base` tokenizer regardless of the specified model.
@@ -312,6 +318,36 @@ The mock server returns OpenAI-compatible error responses:
 - `404 Not Found` - Unsupported endpoint
 - `500 Internal Server Error` - Server errors
 
+## Programmatic Usage
+
+You can also use the mock server programmatically in your tests:
+
+```typescript
+import { createMockServer } from 'openai-mock-api';
+
+const mockServer = await createMockServer({
+  config: {
+    apiKey: 'test-key',
+    responses: [
+      {
+        id: 'test',
+        messages: [
+          { role: 'user', content: 'Hello' },
+          { role: 'assistant', content: 'Hi there!' }
+        ]
+      }
+    ]
+  },
+  port: 3001
+});
+
+await mockServer.start();
+// Your tests here
+await mockServer.stop();
+```
+
+See the [programmatic usage guide](https://patrickjm.github.io/openai-mock-api/guides/programmatic-usage) for more details.
+
 ## Development
 
 ### Setup
@@ -345,6 +381,7 @@ npm run dev -- --config example-config.yaml
 For comprehensive documentation, visit our [documentation site](https://patrickjm.github.io/openai-mock-api).
 
 The documentation includes:
+
 - **Getting Started**: Quick setup and installation guides
 - **Configuration**: Detailed matcher types and response configuration
 - **Guides**: Testing patterns, streaming, error handling, and integration examples

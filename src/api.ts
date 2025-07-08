@@ -23,11 +23,13 @@ export interface MockServerInstance {
  * @param options Configuration options
  * @returns Promise resolving to a MockServerInstance
  */
-export async function createMockServer(options: CreateMockServerOptions): Promise<MockServerInstance> {
+export async function createMockServer(
+  options: CreateMockServerOptions
+): Promise<MockServerInstance> {
   const logger = new Logger(options.logFile, options.verbose);
-  
+
   let config: MockConfig;
-  
+
   if (typeof options.config === 'string') {
     // Parse YAML string
     try {
@@ -38,15 +40,14 @@ export async function createMockServer(options: CreateMockServerOptions): Promis
   } else {
     config = options.config;
   }
-  
+
   // Validate config
   const configLoader = new ConfigLoader(logger);
-  // Use private method via any cast to validate
-  (configLoader as any).validateConfig(config);
-  
+  configLoader.validateConfig(config);
+
   const server = new MockServer(config, logger);
   const port = options.port || config.port || 3000;
-  
+
   return {
     server,
     port,
@@ -57,7 +58,7 @@ export async function createMockServer(options: CreateMockServerOptions): Promis
     stop: async () => {
       await server.stop();
       logger.info('Mock OpenAI API server stopped');
-    }
+    },
   };
 }
 
@@ -66,7 +67,9 @@ export async function createMockServer(options: CreateMockServerOptions): Promis
  * @param options Configuration options
  * @returns Promise resolving to a MockServerInstance
  */
-export async function startMockServer(options: CreateMockServerOptions): Promise<MockServerInstance> {
+export async function startMockServer(
+  options: CreateMockServerOptions
+): Promise<MockServerInstance> {
   const instance = await createMockServer(options);
   await instance.start();
   return instance;

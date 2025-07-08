@@ -79,7 +79,7 @@ responses:
     const logger = new Logger();
     const configLoader = new ConfigLoader(logger);
     const config = await configLoader.load(testConfigPath);
-    
+
     server = new MockServer(config, logger);
     await server.start(testPort);
 
@@ -121,7 +121,9 @@ responses:
       });
 
       expect(response).toBeDefined();
-      expect(response.choices[0].message.content).toBe("Hello! I'm doing well, thank you for asking.");
+      expect(response.choices[0].message.content).toBe(
+        "Hello! I'm doing well, thank you for asking."
+      );
     });
   });
 
@@ -132,7 +134,9 @@ responses:
         messages: [{ role: 'user', content: 'Hello, how are you?' }],
       });
 
-      expect(response.choices[0].message.content).toBe("Hello! I'm doing well, thank you for asking.");
+      expect(response.choices[0].message.content).toBe(
+        "Hello! I'm doing well, thank you for asking."
+      );
       expect(response.usage).toBeDefined();
       expect(response.usage?.total_tokens).toBeGreaterThan(0);
       expect(response.usage?.prompt_tokens).toBeGreaterThan(0);
@@ -163,27 +167,23 @@ responses:
         messages: [{ role: 'user', content: 'What is the weather like today?' }],
       });
 
-      expect(response.choices[0].message.content).toBe("The weather is nice today!");
+      expect(response.choices[0].message.content).toBe('The weather is nice today!');
     });
 
     test('should handle "any" matcher for flexible flows', async () => {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'user', content: 'Any random user message here' }
-        ],
+        messages: [{ role: 'user', content: 'Any random user message here' }],
       });
 
-      expect(response.choices[0].message.content).toBe("This matches any user message!");
+      expect(response.choices[0].message.content).toBe('This matches any user message!');
     });
 
     test('should return error for unmatched messages', async () => {
       await expect(
         openai.chat.completions.create({
           model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'This system message has no matching pattern' }
-          ],
+          messages: [{ role: 'system', content: 'This system message has no matching pattern' }],
         })
       ).rejects.toThrow();
     });
@@ -191,12 +191,10 @@ responses:
     test('should support partial conversation matching - first turn', async () => {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'user', content: 'Start conversation' }
-        ],
+        messages: [{ role: 'user', content: 'Start conversation' }],
       });
 
-      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
+      expect(response.choices[0].message.content).toBe('The weather is sunny and warm today!');
     });
 
     test('should support partial conversation matching - second turn', async () => {
@@ -204,11 +202,11 @@ responses:
         model: 'gpt-3.5-turbo',
         messages: [
           { role: 'user', content: 'Start conversation' },
-          { role: 'assistant', content: 'Hello! How can I help you?' }
+          { role: 'assistant', content: 'Hello! How can I help you?' },
         ],
       });
 
-      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
+      expect(response.choices[0].message.content).toBe('The weather is sunny and warm today!');
     });
 
     test('should support partial conversation matching - full conversation', async () => {
@@ -217,11 +215,11 @@ responses:
         messages: [
           { role: 'user', content: 'Start conversation' },
           { role: 'assistant', content: 'Hello! How can I help you?' },
-          { role: 'user', content: 'Tell me about the weather' }
+          { role: 'user', content: 'Tell me about the weather' },
         ],
       });
 
-      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
+      expect(response.choices[0].message.content).toBe('The weather is sunny and warm today!');
     });
   });
 
@@ -248,10 +246,10 @@ responses:
   describe('Models Endpoint', () => {
     test('should return available models', async () => {
       const models = await openai.models.list();
-      
+
       expect(models.data).toHaveLength(2);
-      expect(models.data.map(m => m.id)).toContain('gpt-3.5-turbo');
-      expect(models.data.map(m => m.id)).toContain('gpt-4');
+      expect(models.data.map((m) => m.id)).toContain('gpt-3.5-turbo');
+      expect(models.data.map((m) => m.id)).toContain('gpt-4');
     });
   });
 
@@ -262,7 +260,9 @@ responses:
         messages: [{ role: 'user', content: 'Hello, how are you?' }],
       });
 
-      expect(response.choices[0].message.content).toBe("Hello! I'm doing well, thank you for asking.");
+      expect(response.choices[0].message.content).toBe(
+        "Hello! I'm doing well, thank you for asking."
+      );
       expect(response.usage).toBeDefined();
       expect(response.usage?.total_tokens).toBeGreaterThan(0);
       expect(response.usage?.prompt_tokens).toBeGreaterThan(0);
@@ -277,12 +277,12 @@ responses:
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-api-key-12345',
+            Authorization: 'Bearer test-api-key-12345',
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
           }),
-        }).then(res => res.json())
+        }).then((res) => res.json())
       ).resolves.toMatchObject({
         error: {
           type: 'invalid_request_error',
@@ -297,12 +297,12 @@ responses:
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-api-key-12345',
+            Authorization: 'Bearer test-api-key-12345',
           },
           body: JSON.stringify({
             messages: [{ role: 'user', content: 'Hello' }],
           }),
-        }).then(res => res.json())
+        }).then((res) => res.json())
       ).resolves.toMatchObject({
         error: {
           type: 'invalid_request_error',

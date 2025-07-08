@@ -12,30 +12,15 @@ Get your mock OpenAI API server running in less than 5 minutes.
 Create a `config.yaml` file with your first mock response:
 
 ```yaml
-apiKey: "test-api-key-12345"
+apiKey: 'test-api-key-12345'
 port: 3000
 responses:
-  - id: "greeting"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello, how are you?"
-    response:
-      id: "chatcmpl-example"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! I'm doing well, thank you for asking."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
+  - id: 'greeting'
+    messages:
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
+        content: "Hello! I'm doing well, thank you for asking."
 ```
 
 ## Step 2: Start the Server
@@ -60,6 +45,7 @@ npx openai-mock-api --config -
 ```
 
 You should see output like:
+
 ```
 Mock OpenAI API server started on port 3000
 ```
@@ -69,6 +55,7 @@ Mock OpenAI API server started on port 3000
 Create a simple test script or use curl:
 
 ### Using curl
+
 ```bash
 curl -X POST http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -82,6 +69,7 @@ curl -X POST http://localhost:3000/v1/chat/completions \
 ```
 
 ### Using OpenAI Client
+
 ```typescript
 import OpenAI from 'openai';
 
@@ -104,62 +92,32 @@ console.log(response.choices[0].message.content);
 Extend your configuration with different matcher types:
 
 ```yaml
-apiKey: "test-api-key-12345"
+apiKey: 'test-api-key-12345'
 port: 3000
 responses:
-  - id: "greeting"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello, how are you?"
-    response:
-      # ... response configuration
+  - id: 'greeting'
+    messages:
+      - role: 'user'
+        content: 'Hello, how are you?'
+      - role: 'assistant'
+        content: "Hello! I'm doing well, thank you for asking."
 
-  - id: "help-requests"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "help"
-    response:
-      id: "chatcmpl-help"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "I'd be happy to help! What do you need assistance with?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 10
-        completion_tokens: 15
-        total_tokens: 25
+  - id: 'help-requests'
+    messages:
+      - role: 'user'
+        content: 'help'
+        matcher: 'contains'
+      - role: 'assistant'
+        content: "I'd be happy to help! What do you need assistance with?"
 
-  - id: "non-debug"
-    matcher:
-      type: "contains"
-      invert: true  # Matches messages that DON'T contain "debug"
-      messages:
-        - role: "user"
-          content: "debug"
-    response:
-      id: "chatcmpl-normal"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "This is a normal response for non-debug requests."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 8
-        completion_tokens: 12
-        total_tokens: 20
+  - id: 'fuzzy-match'
+    messages:
+      - role: 'user'
+        content: 'I need assistance'
+        matcher: 'fuzzy'
+        threshold: 0.8
+      - role: 'assistant'
+        content: 'I can help you with that!'
 ```
 
 ## CLI Options
@@ -194,5 +152,5 @@ npx openai-mock-api --help
 ## Next Steps
 
 - [Learn about matcher types →](/configuration/matchers)
-- [Explore response configuration →](/configuration/responses) 
+- [Explore response configuration →](/configuration/responses)
 - [See integration examples →](/guides/integration-examples)

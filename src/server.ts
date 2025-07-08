@@ -1,71 +1,94 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, Application } from 'express';
 import { Server } from 'http';
-import { MockConfig, ChatCompletionRequest, OpenAIError, OpenAIResponse, StreamResponse, Usage } from './types';
+import { MockConfig, ChatCompletionRequest, OpenAIResponse, Usage } from './types';
 import { Logger } from './logger';
-import { MessageMatcherService } from './matcher';
-import { encoding_for_model, get_encoding } from 'tiktoken';
+import {
+  ILogger,
+  IChatCompletionService,
+  IStreamService,
+  ITokenCounter,
+  IRequestValidator,
+  IAuthenticationService,
+  IErrorHandler,
+  ChatCompletionResponse,
+} from './interfaces';
+import { AuthenticationMiddleware, AuthenticationService } from './middleware/auth.middleware';
+import {
+  ErrorHandlingMiddleware,
+  ErrorHandler,
+  ValidationError,
+} from './middleware/error.middleware';
+import { LoggingMiddleware } from './middleware/logging.middleware';
+import { ChatCompletionService } from './services/chat-completion.service';
+import { StreamService } from './services/stream.service';
+import { TokenCounter } from './services/token-counter';
+import { RequestValidator } from './services/request-validator';
 
 export class MockServer {
-  private app: express.Application;
+  private app: Application;
   private server?: Server;
-  private matcher: MessageMatcherService;
+  private chatCompletionService: IChatCompletionService;
+  private streamService: IStreamService;
+  private tokenCounter: ITokenCounter;
+  private validator: IRequestValidator;
+  private authService: IAuthenticationService;
+  private errorHandler: IErrorHandler;
 
-  constructor(private config: MockConfig, private logger: Logger) {
+  constructor(
+    private config: MockConfig,
+    private logger: ILogger
+  ) {
     this.app = express();
-    this.matcher = new MessageMatcherService(logger);
+
+    // Initialize services
+    this.tokenCounter = new TokenCounter(logger);
+    this.validator = new RequestValidator(logger);
+    this.authService = new AuthenticationService(config.apiKey);
+    this.errorHandler = new ErrorHandler(logger);
+    this.chatCompletionService = new ChatCompletionService(
+      logger,
+      this.validator,
+      this.tokenCounter,
+      config.responses
+    );
+    this.streamService = new StreamService(logger);
+
     this.setupMiddleware();
     this.setupRoutes();
+    this.setupErrorHandling();
   }
 
   private setupMiddleware(): void {
+    // Body parsing
     this.app.use(express.json());
-    
-    // CORS middleware
-    this.app.use((req: Request, res: Response, next: NextFunction) => {
+
+    // CORS
+    this.app.use(this.createCorsMiddleware());
+
+    // Logging
+    const loggingMiddleware = new LoggingMiddleware(this.logger);
+    this.app.use(loggingMiddleware.middleware());
+
+    // Authentication
+    const authMiddleware = new AuthenticationMiddleware(this.authService, this.logger);
+    this.app.use(authMiddleware.middleware());
+  }
+
+  private createCorsMiddleware() {
+    return (req: Request, res: Response, next: NextFunction) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      
+      res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+      );
+
       if (req.method === 'OPTIONS') {
         res.sendStatus(200);
       } else {
         next();
       }
-    });
-
-    // Request logging
-    this.app.use((req: Request, res: Response, next: NextFunction) => {
-      this.logger.debug(`${req.method} ${req.path}`, {
-        headers: req.headers,
-        body: req.body,
-      });
-      next();
-    });
-
-    // API key validation - check manually in middleware
-    this.app.use((req: Request, res: Response, next: NextFunction) => {
-      if (req.path.startsWith('/v1')) {
-        this.validateApiKey(req, res, next);
-      } else {
-        next();
-      }
-    });
-  }
-
-  private validateApiKey(req: Request, res: Response, next: NextFunction): void {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader) {
-      return this.sendError(res, 401, 'missing_authorization', 'Authorization header is required');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    
-    if (token !== this.config.apiKey) {
-      return this.sendError(res, 401, 'invalid_api_key', 'Invalid API key provided');
-    }
-
-    next();
+    };
   }
 
   private setupRoutes(): void {
@@ -96,197 +119,88 @@ export class MockServer {
     });
 
     // Chat completions endpoint
-    this.app.post('/v1/chat/completions', this.handleChatCompletion.bind(this));
+    this.app.post('/v1/chat/completions', this.asyncHandler(this.handleChatCompletion.bind(this)));
 
-    // Catch-all for unsupported endpoints - remove this for now
+    // 404 handler
     this.app.use((req: Request, res: Response) => {
       if (req.path.startsWith('/v1')) {
-        this.sendError(res, 404, 'unsupported_endpoint', `Endpoint ${req.path} is not supported`);
+        throw new ValidationError(`Endpoint ${req.path} is not supported`);
       } else {
         res.status(404).json({ error: 'Not found' });
       }
     });
+  }
 
-    // Global error handler
-    this.app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-      this.logger.error('Unhandled error', error);
-      this.sendError(res, 500, 'internal_error', 'Internal server error');
-    });
+  private setupErrorHandling(): void {
+    const errorMiddleware = new ErrorHandlingMiddleware(this.errorHandler, this.logger);
+    this.app.use(errorMiddleware.middleware());
+  }
+
+  private asyncHandler(fn: Function) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };
   }
 
   private async handleChatCompletion(req: Request, res: Response): Promise<void> {
-    try {
-      const request = req.body as ChatCompletionRequest;
-      
-      // Validate request
-      if (!request.messages || !Array.isArray(request.messages) || request.messages.length === 0) {
-        return this.sendError(res, 400, 'invalid_request_error', 'messages is required and must be a non-empty array');
-      }
+    const request = req.body as ChatCompletionRequest;
 
-      if (!request.model) {
-        return this.sendError(res, 400, 'invalid_request_error', 'model is required');
-      }
+    // Handle chat completion through service
+    const response = await this.chatCompletionService.handleChatCompletion(request);
 
-      // Find matching response
-      const matchResult = this.matcher.findMatch(request, this.config.responses);
-      
-      if (!matchResult) {
-        return this.sendError(res, 400, 'no_match_found', 'No matching response found for the provided messages');
-      }
-
-      const { response: mockResponse, matchedLength } = matchResult;
-
-      // Find the appropriate assistant response for this match
-      const assistantResponse = this.matcher.findResponseForMatch(mockResponse.messages, matchedLength);
-      
-      if (!assistantResponse) {
-        return this.sendError(res, 500, 'internal_error', 'No assistant response found in conversation flow');
-      }
-
-      // Handle streaming vs non-streaming
-      if (request.stream) {
-        await this.handleStreamingResponse(res, assistantResponse, request, mockResponse.id);
-      } else {
-        // Calculate tokens dynamically
-        const responseContent = assistantResponse.content || '';
-        const usage = this.calculateTokens(request, responseContent);
-
-        // Create OpenAI-compatible response
-        const response: OpenAIResponse & { usage: Usage } = {
-          id: `chatcmpl-${this.generateId()}`,
-          object: 'chat.completion',
-          created: Math.floor(Date.now() / 1000),
-          model: request.model,
-          choices: [{
+    // Handle streaming vs non-streaming
+    if (request.stream) {
+      await this.handleStreamingResponse(res, response, request);
+    } else {
+      // Create OpenAI-compatible response
+      const openAIResponse: OpenAIResponse & { usage: Usage } = {
+        id: response.id,
+        object: 'chat.completion',
+        created: Math.floor(Date.now() / 1000),
+        model: response.model,
+        choices: [
+          {
             index: 0,
             message: {
               role: 'assistant',
-              content: assistantResponse.content,
-              tool_calls: assistantResponse.tool_calls,
+              content: response.assistantMessage.content,
+              tool_calls: response.assistantMessage.tool_calls,
             },
             finish_reason: 'stop',
-          }],
-          usage,
-        };
+          },
+        ],
+        usage: response.usage!,
+      };
 
-        this.logger.info(`Matched request to response: ${mockResponse.id}`);
-        res.json(response);
-      }
-
-    } catch (error) {
-      this.logger.error('Error handling chat completion', error);
-      this.sendError(res, 500, 'internal_error', 'Internal server error');
+      res.json(openAIResponse);
     }
   }
 
-  private sendError(res: Response, status: number, type: string, message: string, param?: string): void {
-    const error: OpenAIError = {
-      error: {
-        message,
-        type,
-        param,
-        code: type,
-      },
-    };
-
-    this.logger.warn(`Sending error response: ${status} ${type}`, error);
-    res.status(status).json(error);
-  }
-
-  private async handleStreamingResponse(res: Response, assistantResponse: any, request: ChatCompletionRequest, responseId: string): Promise<void> {
-    const streamId = `chatcmpl-${this.generateId()}`;
-    const created = Math.floor(Date.now() / 1000);
-    
+  private async handleStreamingResponse(
+    res: Response,
+    response: ChatCompletionResponse,
+    request: ChatCompletionRequest
+  ): Promise<void> {
     // Set up SSE headers
     res.writeHead(200, {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no', // Disable nginx buffering
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
     });
 
-    this.logger.info(`Starting streaming response for: ${responseId}`);
-
-    // Send initial chunk with role
-    const initialChunk: StreamResponse = {
-      id: streamId,
-      object: 'chat.completion.chunk',
-      created,
+    const streamOptions = {
       model: request.model,
-      choices: [{
-        index: 0,
-        delta: { role: 'assistant' },
-        finish_reason: null,
-      }],
+      created: Math.floor(Date.now() / 1000),
+      delayMs: 50,
     };
-    res.write(`data: ${JSON.stringify(initialChunk)}\n\n`);
 
-    // Stream the content word by word
-    const content = assistantResponse.content || '';
-    const words = content.split(' ');
-    
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i] + (i < words.length - 1 ? ' ' : '');
-      
-      const chunk: StreamResponse = {
-        id: streamId,
-        object: 'chat.completion.chunk',
-        created,
-        model: request.model,
-        choices: [{
-          index: 0,
-          delta: { content: word },
-          finish_reason: null,
-        }],
-      };
-      
-      res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-      
-      // Add a small delay to simulate streaming
-      await new Promise(resolve => setTimeout(resolve, 50));
+    // Stream the response
+    for await (const chunk of this.streamService.streamResponse(response, streamOptions)) {
+      res.write(chunk);
     }
 
-    // Send final chunk with finish_reason
-    const finalChunk: StreamResponse = {
-      id: streamId,
-      object: 'chat.completion.chunk',
-      created,
-      model: request.model,
-      choices: [{
-        index: 0,
-        delta: {},
-        finish_reason: 'stop',
-      }],
-    };
-    res.write(`data: ${JSON.stringify(finalChunk)}\n\n`);
-    
-    // Send done signal
-    res.write('data: [DONE]\n\n');
     res.end();
-  }
-
-  private generateId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  }
-
-  private calculateTokens(request: ChatCompletionRequest, responseContent: string): Usage {
-    // Always use cl100k_base encoding for simplicity in mock environment
-    const encoding = get_encoding('cl100k_base');
-    
-    // Calculate prompt tokens from all messages
-    const promptText = request.messages.map(msg => `${msg.role}: ${msg.content || ''}`).join('\n');
-    const promptTokens = encoding.encode(promptText).length;
-    
-    // Calculate completion tokens from response content
-    const completionTokens = encoding.encode(responseContent).length;
-    
-    encoding.free();
-    
-    return {
-      prompt_tokens: promptTokens,
-      completion_tokens: completionTokens,
-      total_tokens: promptTokens + completionTokens
-    };
   }
 
   async start(port: number): Promise<void> {
@@ -309,6 +223,10 @@ export class MockServer {
 
   async stop(): Promise<void> {
     return new Promise((resolve) => {
+      if (this.tokenCounter && 'dispose' in this.tokenCounter) {
+        (this.tokenCounter as TokenCounter).dispose();
+      }
+
       if (this.server) {
         this.server.close(() => {
           this.logger.info('Server stopped');

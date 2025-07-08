@@ -13,10 +13,10 @@ describe('Programmatic API', () => {
             id: 'test-response',
             messages: [
               { role: 'user', content: 'Hello' },
-              { role: 'assistant', content: 'Hi there!' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'Hi there!' },
+            ],
+          },
+        ],
       };
 
       const instance = await createMockServer({ config });
@@ -53,10 +53,10 @@ responses:
             id: 'test-response',
             messages: [
               { role: 'user', content: 'Hello' },
-              { role: 'assistant', content: 'Hi there!' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'Hi there!' },
+            ],
+          },
+        ],
       };
 
       const instance = await createMockServer({ config, port: 5000 });
@@ -69,18 +69,20 @@ apiKey: test-key
 invalid yaml [[[
 `;
 
-      await expect(createMockServer({ config: invalidYaml }))
-        .rejects.toThrow('Failed to parse YAML configuration');
+      await expect(createMockServer({ config: invalidYaml })).rejects.toThrow(
+        'Failed to parse YAML configuration'
+      );
     });
 
     it('should throw on invalid config', async () => {
       const invalidConfig: any = {
         // Missing apiKey
-        responses: []
+        responses: [],
       };
 
-      await expect(createMockServer({ config: invalidConfig }))
-        .rejects.toThrow('Configuration must include an apiKey');
+      await expect(createMockServer({ config: invalidConfig })).rejects.toThrow(
+        'Configuration must include an apiKey'
+      );
     });
   });
 
@@ -94,14 +96,14 @@ invalid yaml [[[
             id: 'greeting',
             messages: [
               { role: 'user', content: 'Hello' },
-              { role: 'assistant', content: 'Hello from mock!' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'Hello from mock!' },
+            ],
+          },
+        ],
       };
 
       const instance = await startMockServer({ config });
-      
+
       try {
         // Test that the server is running
         const openai = new OpenAI({
@@ -129,15 +131,15 @@ invalid yaml [[[
             id: 'test',
             messages: [
               { role: 'user', content: 'Test' },
-              { role: 'assistant', content: 'Test response' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'Test response' },
+            ],
+          },
+        ],
       };
 
       // Just test that verbose option is accepted without errors
       const instance = await startMockServer({ config, verbose: true });
-      
+
       try {
         expect(instance.server).toBeDefined();
         expect(instance.port).toBe(4003);
@@ -156,10 +158,10 @@ invalid yaml [[[
             id: 'server1',
             messages: [
               { role: 'user', content: 'ping' },
-              { role: 'assistant', content: 'pong from server 1' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'pong from server 1' },
+            ],
+          },
+        ],
       };
 
       const config2: MockConfig = {
@@ -169,10 +171,10 @@ invalid yaml [[[
             id: 'server2',
             messages: [
               { role: 'user', content: 'ping' },
-              { role: 'assistant', content: 'pong from server 2' }
-            ]
-          }
-        ]
+              { role: 'assistant', content: 'pong from server 2' },
+            ],
+          },
+        ],
       };
 
       const server1 = await startMockServer({ config: config1, port: 4004 });

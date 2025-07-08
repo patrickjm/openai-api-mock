@@ -23,7 +23,7 @@ describe('ConfigLoader', () => {
       Object.defineProperty(process, 'stdin', {
         value: originalStdin,
         writable: true,
-        configurable: true
+        configurable: true,
       });
     });
 
@@ -45,14 +45,14 @@ responses:
         read() {
           this.push(yamlContent);
           this.push(null); // End the stream
-        }
+        },
       });
 
       // Replace process.stdin with our mock
       Object.defineProperty(process, 'stdin', {
         value: mockStdin,
         writable: true,
-        configurable: true
+        configurable: true,
       });
 
       const config = await configLoader.load('-');
@@ -74,32 +74,36 @@ invalid yaml content [[[
         read() {
           this.push(invalidYaml);
           this.push(null);
-        }
+        },
       });
 
       Object.defineProperty(process, 'stdin', {
         value: mockStdin,
         writable: true,
-        configurable: true
+        configurable: true,
       });
 
-      await expect(configLoader.load('-')).rejects.toThrow('Failed to load configuration from stdin');
+      await expect(configLoader.load('-')).rejects.toThrow(
+        'Failed to load configuration from stdin'
+      );
     });
 
     it('should handle empty stdin', async () => {
       const mockStdin = new Readable({
         read() {
           this.push(null); // Empty stream
-        }
+        },
       });
 
       Object.defineProperty(process, 'stdin', {
         value: mockStdin,
         writable: true,
-        configurable: true
+        configurable: true,
       });
 
-      await expect(configLoader.load('-')).rejects.toThrow('Failed to load configuration from stdin');
+      await expect(configLoader.load('-')).rejects.toThrow(
+        'Failed to load configuration from stdin'
+      );
     });
   });
 });

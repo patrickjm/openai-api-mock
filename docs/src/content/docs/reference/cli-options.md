@@ -61,6 +61,7 @@ The log file will be created if it doesn't exist. The directory must exist.
 ### `-v, --verbose`
 
 Enable verbose logging. Shows debug-level information including:
+
 - Request details
 - Matcher evaluation process
 - Response selection logic
@@ -186,18 +187,19 @@ openai-mock-api --config "$OPENAI_MOCK_CONFIG" --port "$OPENAI_MOCK_PORT"
 
 ## Exit Codes
 
-| Code | Description |
-|------|-------------|
-| 0    | Success |
+| Code | Description                                   |
+| ---- | --------------------------------------------- |
+| 0    | Success                                       |
 | 1    | Configuration error or server startup failure |
-| 2    | Invalid command-line arguments |
-| 130  | Interrupted (Ctrl+C) |
+| 2    | Invalid command-line arguments                |
+| 130  | Interrupted (Ctrl+C)                          |
 
 ## Troubleshooting
 
 ### Common Issues
 
 **"Configuration file not found"**
+
 ```bash
 # Check the path
 ls -la config.yaml
@@ -207,6 +209,7 @@ openai-mock-api --config /full/path/to/config.yaml
 ```
 
 **"Port already in use"**
+
 ```bash
 # Check what's using the port
 lsof -i :3000
@@ -216,6 +219,7 @@ openai-mock-api --config config.yaml --port 3001
 ```
 
 **"Permission denied" for log file**
+
 ```bash
 # Check directory permissions
 ls -la /var/log/
@@ -233,6 +237,7 @@ openai-mock-api --config config.yaml --verbose
 ```
 
 This will show:
+
 - Configuration loading process
 - Server startup details
 - Request processing information

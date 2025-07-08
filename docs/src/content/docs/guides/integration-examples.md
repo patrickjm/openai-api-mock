@@ -23,7 +23,7 @@ export function createChatAPI(openai: OpenAI) {
   app.post('/chat', async (req, res) => {
     try {
       const { message } = req.body;
-      
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: message }],
@@ -62,10 +62,7 @@ describe('Chat API', () => {
   });
 
   test('should return AI response', async () => {
-    const response = await request(app)
-      .post('/chat')
-      .send({ message: 'Hello' })
-      .expect(200);
+    const response = await request(app).post('/chat').send({ message: 'Hello' }).expect(200);
 
     expect(response.body.response).toBe('Hello! How can I help you?');
     expect(response.body.usage).toBeDefined();
@@ -86,29 +83,14 @@ describe('Chat API', () => {
 
 ```yaml
 # test-config.yaml
-apiKey: "test-key"
+apiKey: 'test-key'
 responses:
-  - id: "hello-response"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello"
-    response:
-      id: "chatcmpl-hello"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! How can I help you?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 2
-        completion_tokens: 7
-        total_tokens: 9
+  - id: 'hello-response'
+    messages:
+      - role: 'user'
+        content: 'Hello'
+      - role: 'assistant'
+        content: 'Hello! How can I help you?'
 ```
 
 ## React Application Testing
@@ -125,7 +107,7 @@ interface ChatComponentProps {
 }
 
 export function ChatComponent({ openai }: ChatComponentProps) {
-  const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
+  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -133,16 +115,16 @@ export function ChatComponent({ openai }: ChatComponentProps) {
     if (!input.trim()) return;
 
     const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [...messages, userMessage].map(m => ({ 
-          role: m.role as 'user' | 'assistant', 
-          content: m.content 
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
         })),
       });
 
@@ -151,13 +133,16 @@ export function ChatComponent({ openai }: ChatComponentProps) {
         content: completion.choices[0].message.content,
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error.'
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -172,9 +157,9 @@ export function ChatComponent({ openai }: ChatComponentProps) {
           </div>
         ))}
       </div>
-      
+
       {loading && <div data-testid="loading">Thinking...</div>}
-      
+
       <div>
         <input
           data-testid="message-input"
@@ -268,77 +253,33 @@ describe('ChatComponent', () => {
 
 ```yaml
 # react-test-config.yaml
-apiKey: "test-key"
+apiKey: 'test-key'
 responses:
-  - id: "hello-response"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello"
-    response:
-      id: "chatcmpl-hello"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! How can I help you?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 2
-        completion_tokens: 7
-        total_tokens: 9
+  - id: 'hello-response'
+    messages:
+      - role: 'user'
+        content: 'Hello'
+      - role: 'assistant'
+        content: 'Hello! How can I help you?'
 
-  - id: "name-introduction"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "My name is"
-    response:
-      id: "chatcmpl-name"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Nice to meet you! I'll remember your name."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 8
-        completion_tokens: 10
-        total_tokens: 18
+  - id: 'name-introduction'
+    messages:
+      - role: 'user'
+        content: 'My name is'
+        matcher: 'contains'
+      - role: 'assistant'
+        content: "Nice to meet you! I'll remember your name."
 
-  - id: "name-recall"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "My name is John"
-        - role: "assistant"
-          content: "Nice to meet you! I'll remember your name."
-        - role: "user"
-          content: "What is my name?"
-    response:
-      id: "chatcmpl-recall"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Your name is John."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 20
-        completion_tokens: 5
-        total_tokens: 25
+  - id: 'name-recall'
+    messages:
+      - role: 'user'
+        content: 'My name is John'
+      - role: 'assistant'
+        content: "Nice to meet you! I'll remember your name."
+      - role: 'user'
+        content: 'What is my name?'
+      - role: 'assistant'
+        content: 'Your name is John.'
 ```
 
 ## Python Application Testing
@@ -372,7 +313,7 @@ async def chat(request: ChatRequest):
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": request.message}]
         )
-        
+
         return ChatResponse(
             response=completion.choices[0].message.content,
             usage=completion.usage
@@ -408,26 +349,63 @@ def test_chat_error_handling():
 def setup_environment():
     import subprocess
     import time
-    
+
     # Start mock server
     process = subprocess.Popen([
-        "npx", "openai-mock-api", 
+        "npx", "openai-mock-api",
         "--config", "python-test-config.yaml"
     ])
     time.sleep(2)  # Wait for server to start
-    
+
     yield
-    
+
     # Cleanup
     process.terminate()
 ```
 
 ## Jest Integration Testing
 
-### Setup and Teardown
+### Programmatic Setup (Recommended)
 
 ```typescript
 // tests/setup.ts
+import { createMockServer, MockConfig } from 'openai-mock-api';
+
+let mockServerInstance: any;
+
+export async function setupMockServer(): Promise<void> {
+  const config: MockConfig = {
+    apiKey: 'test-key',
+    responses: [
+      {
+        id: 'hello-response',
+        messages: [
+          { role: 'user', content: 'Hello' },
+          { role: 'assistant', content: 'Hello! How can I help you?' }
+        ]
+      }
+    ]
+  };
+
+  mockServerInstance = await createMockServer({ 
+    config, 
+    port: 3000,
+    verbose: false 
+  });
+  await mockServerInstance.start();
+}
+
+export async function teardownMockServer(): Promise<void> {
+  if (mockServerInstance) {
+    await mockServerInstance.stop();
+  }
+}
+```
+
+### CLI-based Setup (Alternative)
+
+```typescript
+// tests/setup-cli.ts
 import { ChildProcess, spawn } from 'child_process';
 
 let mockServer: ChildProcess;
@@ -439,7 +417,7 @@ export async function setupMockServer(): Promise<void> {
       '--config',
       'test-config.yaml',
       '--port',
-      '3000'
+      '3000',
     ]);
 
     let output = '';
@@ -464,7 +442,7 @@ export async function setupMockServer(): Promise<void> {
 export async function teardownMockServer(): Promise<void> {
   if (mockServer) {
     mockServer.kill();
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 ```
@@ -550,11 +528,11 @@ services:
     image: node:18-alpine
     command: sh -c "npm install -g openai-mock-api && openai-mock-api --config /config/test-config.yaml"
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./test-config.yaml:/config/test-config.yaml
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/health']
       interval: 2s
       timeout: 1s
       retries: 5
@@ -584,7 +562,7 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       openai-mock:
         image: node:18
@@ -597,25 +575,25 @@ jobs:
           --health-retries 5
         env:
           CONFIG_PATH: /github/workspace/test-config.yaml
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
       - name: Start OpenAI Mock
         run: |
           npm install -g openai-mock-api
           openai-mock-api --config test-config.yaml &
           sleep 3
-      
+
       - name: Run tests
         run: npm test
         env:
@@ -636,22 +614,22 @@ test:
   services:
     - name: node:18
       alias: openai-mock
-      command: 
+      command:
         - sh
         - -c
-        - "npm install -g openai-mock-api && openai-mock-api --config test-config.yaml"
-  
+        - 'npm install -g openai-mock-api && openai-mock-api --config test-config.yaml'
+
   variables:
-    OPENAI_BASE_URL: "http://openai-mock:3000/v1"
-    OPENAI_API_KEY: "test-key"
-  
+    OPENAI_BASE_URL: 'http://openai-mock:3000/v1'
+    OPENAI_API_KEY: 'test-key'
+
   before_script:
     - npm install
-    - sleep 5  # Wait for mock service to start
-  
+    - sleep 5 # Wait for mock service to start
+
   script:
     - npm test
-  
+
   artifacts:
     reports:
       junit: junit.xml
