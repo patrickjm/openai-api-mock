@@ -333,12 +333,12 @@ const mockServer = await createMockServer({
         id: 'test',
         messages: [
           { role: 'user', content: 'Hello' },
-          { role: 'assistant', content: 'Hi there!' }
-        ]
-      }
-    ]
+          { role: 'assistant', content: 'Hi there!' },
+        ],
+      },
+    ],
   },
-  port: 3001
+  port: 3001,
 });
 
 await mockServer.start();

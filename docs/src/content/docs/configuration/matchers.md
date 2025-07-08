@@ -187,7 +187,7 @@ responses:
       - role: 'assistant'
         content: 'Hello! How can I help you?'
 
-# Fuzzy match for help requests
+  # Fuzzy match for help requests
   - id: 'help-fuzzy'
     messages:
       - role: 'user'
@@ -197,7 +197,7 @@ responses:
       - role: 'assistant'
         content: 'I can help you with that!'
 
-# Regex match for code questions
+  # Regex match for code questions
   - id: 'code-regex'
     messages:
       - role: 'user'
@@ -206,7 +206,7 @@ responses:
       - role: 'assistant'
         content: 'I can help you with coding!'
 
-# Contains match for weather
+  # Contains match for weather
   - id: 'weather-contains'
     messages:
       - role: 'user'
@@ -274,7 +274,7 @@ responses:
       - role: 'assistant'
         content: 'I did not understand that request.'
 
-# Flexible conversation starter
+  # Flexible conversation starter
   - id: 'any-user-message'
     messages:
       - role: 'user'

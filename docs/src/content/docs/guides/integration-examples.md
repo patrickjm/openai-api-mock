@@ -381,16 +381,16 @@ export async function setupMockServer(): Promise<void> {
         id: 'hello-response',
         messages: [
           { role: 'user', content: 'Hello' },
-          { role: 'assistant', content: 'Hello! How can I help you?' }
-        ]
-      }
-    ]
+          { role: 'assistant', content: 'Hello! How can I help you?' },
+        ],
+      },
+    ],
   };
 
-  mockServerInstance = await createMockServer({ 
-    config, 
+  mockServerInstance = await createMockServer({
+    config,
     port: 3000,
-    verbose: false 
+    verbose: false,
   });
   await mockServerInstance.start();
 }

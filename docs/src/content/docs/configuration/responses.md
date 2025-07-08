@@ -106,7 +106,7 @@ responses:
 
 ### Code Response
 
-```yaml
+````yaml
 responses:
   - id: 'python-example'
     messages:
@@ -125,7 +125,7 @@ responses:
           ```
 
           This function prints a greeting message.
-```
+````
 
 ### Multi-Turn Conversation
 
@@ -187,6 +187,7 @@ responses:
 ```
 
 This matches:
+
 - Just `["Start conversation"]` → Returns: `"The weather is sunny today!"`
 - `["Start conversation", "Hello! How can I help you?"]` → Returns: `"The weather is sunny today!"`
 - Full conversation → Returns: `"The weather is sunny today!"`
@@ -259,7 +260,7 @@ To handle this, add a catch-all response:
 ```yaml
 responses:
   # ... your specific responses ...
-  
+
   # Catch-all (place last)
   - id: 'fallback'
     messages:

@@ -28,10 +28,10 @@ const config: MockConfig = {
       id: 'greeting',
       messages: [
         { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi there! How can I help you today?' }
-      ]
-    }
-  ]
+        { role: 'assistant', content: 'Hi there! How can I help you today?' },
+      ],
+    },
+  ],
 };
 
 const mockServer = await createMockServer({ config });
@@ -63,9 +63,9 @@ responses:
         content: "Hi there! How can I help you today?"
 `;
 
-const mockServer = await createMockServer({ 
+const mockServer = await createMockServer({
   config: yamlConfig,
-  verbose: true 
+  verbose: true,
 });
 ```
 
@@ -76,9 +76,9 @@ For convenience, you can create and start a server in one call:
 ```typescript
 import { startMockServer } from 'openai-mock-api';
 
-const mockServer = await startMockServer({ 
+const mockServer = await startMockServer({
   config: yamlConfig,
-  port: 3001 
+  port: 3001,
 });
 
 // Server is already running
@@ -104,10 +104,10 @@ describe('OpenAI API Integration', () => {
           id: 'test-response',
           messages: [
             { role: 'user', content: 'test' },
-            { role: 'assistant', content: 'Test response' }
-          ]
-        }
-      ]
+            { role: 'assistant', content: 'Test response' },
+          ],
+        },
+      ],
     };
 
     mockServer = await createMockServer({ config, port: 3002 });
@@ -149,12 +149,14 @@ describe('OpenAI API Tests', () => {
     mockServer = await createMockServer({
       config: {
         apiKey: 'test-key',
-        responses: [/* your responses */]
+        responses: [
+          /* your responses */
+        ],
       },
-      port: 3003
+      port: 3003,
     });
     await mockServer.start();
-    
+
     openai = new OpenAI({
       apiKey: 'test-key',
       baseURL: `http://localhost:${mockServer.port}/v1`,
@@ -181,7 +183,7 @@ import { createMockServer, Logger } from 'openai-mock-api';
 const mockServer = await createMockServer({
   config: yourConfig,
   verbose: true,
-  logFile: './mock-server.log'
+  logFile: './mock-server.log',
 });
 ```
 
@@ -190,25 +192,19 @@ const mockServer = await createMockServer({
 You can run multiple mock servers on different ports:
 
 ```typescript
-const server1 = await createMockServer({ 
-  config: config1, 
-  port: 3001 
+const server1 = await createMockServer({
+  config: config1,
+  port: 3001,
 });
-const server2 = await createMockServer({ 
-  config: config2, 
-  port: 3002 
+const server2 = await createMockServer({
+  config: config2,
+  port: 3002,
 });
 
-await Promise.all([
-  server1.start(),
-  server2.start()
-]);
+await Promise.all([server1.start(), server2.start()]);
 
 // Later...
-await Promise.all([
-  server1.stop(),
-  server2.stop()
-]);
+await Promise.all([server1.stop(), server2.stop()]);
 ```
 
 ### Dynamic Configuration
@@ -222,12 +218,12 @@ function createDynamicConfig(): MockConfig {
     port: parseInt(process.env.MOCK_PORT || '3000'),
     responses: [
       // Generate responses based on test requirements
-    ]
+    ],
   };
 }
 
-const mockServer = await createMockServer({ 
-  config: createDynamicConfig() 
+const mockServer = await createMockServer({
+  config: createDynamicConfig(),
 });
 ```
 
@@ -255,6 +251,7 @@ try {
 Creates a mock server instance without starting it.
 
 **Parameters:**
+
 - `options.config`: MockConfig object or YAML string
 - `options.port`: Optional port override
 - `options.verbose`: Enable verbose logging
@@ -273,10 +270,12 @@ Creates and immediately starts a mock server.
 ### MockServerInstance
 
 **Properties:**
+
 - `server`: The underlying MockServer instance
 - `port`: The port the server is running on
 
 **Methods:**
+
 - `start()`: Start the server
 - `stop()`: Stop the server
 
@@ -293,10 +292,10 @@ Creates and immediately starts a mock server.
 The package includes full TypeScript definitions. Import types as needed:
 
 ```typescript
-import { 
-  MockConfig, 
-  MockResponse, 
+import {
+  MockConfig,
+  MockResponse,
   CreateMockServerOptions,
-  MockServerInstance 
+  MockServerInstance,
 } from 'openai-mock-api';
 ```
