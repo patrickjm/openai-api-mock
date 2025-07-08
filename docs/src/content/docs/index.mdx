@@ -24,11 +24,12 @@ apiKey: "test-key"
 port: 3000
 responses:
   - id: "greeting"
-    matcher:
-      type: "contains"
-      pattern: "hello"
-    response:
-      content: "Hello! How can I help you today?"
+    messages:
+      - role: "user"
+        content: "hello"
+        matcher: "contains"
+      - role: "assistant"
+        content: "Hello! How can I help you today?"
 ```
 
 ```javascript

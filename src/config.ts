@@ -8,9 +8,16 @@ export class ConfigLoader {
 
   async load(configPath: string): Promise<MockConfig> {
     try {
-      this.logger.debug(`Loading configuration from ${configPath}`);
+      let fileContent: string;
       
-      const fileContent = readFileSync(configPath, 'utf-8');
+      if (configPath === '-') {
+        this.logger.debug('Loading configuration from stdin');
+        fileContent = await this.readFromStdin();
+      } else {
+        this.logger.debug(`Loading configuration from ${configPath}`);
+        fileContent = readFileSync(configPath, 'utf-8');
+      }
+      
       const config = YAML.parse(fileContent) as MockConfig;
       
       this.validateConfig(config);
@@ -23,8 +30,32 @@ export class ConfigLoader {
       return config;
     } catch (error) {
       this.logger.error(`Failed to load configuration: ${error}`);
-      throw new Error(`Failed to load configuration from ${configPath}: ${error}`);
+      const source = configPath === '-' ? 'stdin' : configPath;
+      throw new Error(`Failed to load configuration from ${source}: ${error}`);
     }
+  }
+
+  private readFromStdin(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let data = '';
+      
+      process.stdin.setEncoding('utf8');
+      
+      process.stdin.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      process.stdin.on('end', () => {
+        resolve(data);
+      });
+      
+      process.stdin.on('error', (err) => {
+        reject(err);
+      });
+      
+      // Start reading
+      process.stdin.resume();
+    });
   }
 
   private validateConfig(config: MockConfig): void {
@@ -45,24 +76,44 @@ export class ConfigLoader {
         throw new Error(`Response at index ${index} must have an id`);
       }
 
-      if (!response.matcher) {
-        throw new Error(`Response ${response.id} must have a matcher`);
+      if (!response.messages || !Array.isArray(response.messages)) {
+        throw new Error(`Response ${response.id} must have a messages array`);
       }
 
-      if (!['exact', 'fuzzy', 'regex', 'contains'].includes(response.matcher.type)) {
-        throw new Error(`Response ${response.id} matcher type must be 'exact', 'fuzzy', 'regex', or 'contains'`);
+      if (response.messages.length === 0) {
+        throw new Error(`Response ${response.id} must have at least one message`);
       }
 
-      if (!response.matcher.messages || !Array.isArray(response.matcher.messages)) {
-        throw new Error(`Response ${response.id} matcher must have a messages array`);
+      for (const [msgIndex, message] of response.messages.entries()) {
+        if (!['system', 'user', 'assistant', 'tool'].includes(message.role)) {
+          throw new Error(`Response ${response.id} message ${msgIndex} role must be 'system', 'user', 'assistant', or 'tool'`);
+        }
+
+        if (message.matcher && !['exact', 'fuzzy', 'regex', 'contains', 'any'].includes(message.matcher)) {
+          throw new Error(`Response ${response.id} message ${msgIndex} matcher type must be 'exact', 'fuzzy', 'regex', 'contains', or 'any'`);
+        }
+
+        if (message.matcher === 'fuzzy' && typeof message.threshold !== 'number') {
+          throw new Error(`Response ${response.id} message ${msgIndex} fuzzy matcher must have a threshold number`);
+        }
+
+        if (message.matcher === 'any' && message.content !== undefined) {
+          throw new Error(`Response ${response.id} message ${msgIndex} with 'any' matcher should not have content`);
+        }
+
+        if (message.matcher !== 'any' && message.role !== 'assistant' && !message.content && !message.tool_calls) {
+          throw new Error(`Response ${response.id} message ${msgIndex} must have content or tool_calls`);
+        }
+
+        if (message.role === 'tool' && !message.tool_call_id) {
+          throw new Error(`Response ${response.id} message ${msgIndex} with role 'tool' must have tool_call_id`);
+        }
       }
 
-      if (response.matcher.type === 'fuzzy' && typeof response.matcher.threshold !== 'number') {
-        throw new Error(`Response ${response.id} fuzzy matcher must have a threshold number`);
-      }
-
-      if (!response.response) {
-        throw new Error(`Response ${response.id} must have a response object`);
+      // Validate that there's at least one assistant message to use as response
+      const assistantMessages = response.messages.filter(msg => msg.role === 'assistant');
+      if (assistantMessages.length === 0) {
+        throw new Error(`Response ${response.id} must have at least one assistant message`);
       }
     }
   }

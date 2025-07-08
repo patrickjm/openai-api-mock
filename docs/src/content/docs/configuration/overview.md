@@ -5,7 +5,7 @@ description: Learn the basics of configuring OpenAI Mock API
 
 # Configuration Overview
 
-OpenAI Mock API uses YAML configuration files to define how it should respond to different message patterns.
+OpenAI Mock API uses YAML configuration files to define conversation flows and their responses.
 
 ## Basic Structure
 
@@ -19,16 +19,13 @@ port: 3000
 # Required: Array of response configurations
 responses:
   - id: "unique-identifier"
-    matcher:
-      type: "exact"  # or "fuzzy", "regex", "contains"
-      messages:
-        - role: "user"
-          content: "Hello"
-    response:
-      # OpenAI-compatible response object
-      id: "chatcmpl-example"
-      object: "chat.completion"
-      # ... more response fields
+    messages:
+      - role: "user"
+        content: "Hello"
+        # Optional: matcher type (default: "exact")
+        matcher: "exact"  # or "fuzzy", "regex", "contains", "any"
+      - role: "assistant"
+        content: "Hello! How can I help you?"
 ```
 
 ## Configuration Fields
@@ -39,24 +36,25 @@ responses:
 |-------|------|----------|-------------|
 | `apiKey` | string | Yes | Authentication key for API requests |
 | `port` | number | No | Server port (default: 3000) |
-| `responses` | array | Yes | Array of response configurations |
+| `responses` | array | Yes | Array of conversation flow configurations |
 
 ### Response Configuration
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier for this response |
-| `matcher` | object | Yes | Message matching configuration |
-| `response` | object | Yes | OpenAI-compatible response |
+| `id` | string | Yes | Unique identifier for this conversation flow |
+| `messages` | array | Yes | Array of messages defining the conversation flow |
 
-### Matcher Configuration
+### Message Configuration
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `type` | string | Yes | One of: "exact", "fuzzy", "regex", "contains" |
-| `messages` | array | Yes | Array of message patterns to match |
+| `role` | string | Yes | One of: "user", "assistant", "system", "tool" |
+| `content` | string | Conditional | Message content (required unless matcher is "any") |
+| `matcher` | string | No | Matching type: "exact" (default), "fuzzy", "regex", "contains", "any" |
 | `threshold` | number | No | For fuzzy matching (0.0-1.0, default: 0.8) |
-| `invert` | boolean | No | Invert the match result (default: false) |
+| `tool_calls` | array | No | For assistant messages with tool calls |
+| `tool_call_id` | string | No | For tool role messages |
 
 ## Minimal Example
 
@@ -64,26 +62,11 @@ responses:
 apiKey: "test-key"
 responses:
   - id: "hello"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello"
-    response:
-      id: "chatcmpl-hello"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! How can I help you?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 2
-        completion_tokens: 8
-        total_tokens: 10
+    messages:
+      - role: "user"
+        content: "Hello"
+      - role: "assistant"
+        content: "Hello! How can I help you?"
 ```
 
 ## Complete Example
@@ -93,122 +76,68 @@ apiKey: "test-api-key-12345"
 port: 3000
 
 responses:
-  # Exact match for greetings
+  # Exact match for greetings (default behavior)
   - id: "greeting"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello, how are you?"
-    response:
-      id: "chatcmpl-greeting"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! I'm doing well, thank you for asking."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 15
-        completion_tokens: 12
-        total_tokens: 27
+    messages:
+      - role: "user"
+        content: "Hello, how are you?"
+      - role: "assistant"
+        content: "Hello! I'm doing well, thank you for asking."
 
   # Fuzzy match for help requests
   - id: "help-request"
-    matcher:
-      type: "fuzzy"
-      threshold: 0.7
-      messages:
-        - role: "user"
-          content: "I need help"
-    response:
-      id: "chatcmpl-help"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "I'd be happy to help! What do you need assistance with?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 10
-        completion_tokens: 15
-        total_tokens: 25
+    messages:
+      - role: "user"
+        content: "I need help"
+        matcher: "fuzzy"
+        threshold: 0.7
+      - role: "assistant"
+        content: "I'd be happy to help! What do you need assistance with?"
 
   # Contains match for weather queries
   - id: "weather"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "weather"
-    response:
-      id: "chatcmpl-weather"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "The weather is nice today!"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 8
-        completion_tokens: 7
-        total_tokens: 15
+    messages:
+      - role: "user"
+        content: "weather"
+        matcher: "contains"
+      - role: "assistant"
+        content: "The weather is nice today!"
 
   # Regex match for code requests
   - id: "code-request"
-    matcher:
-      type: "regex"
-      messages:
-        - role: "user"
-          content: ".*(code|programming|script).*"
-    response:
-      id: "chatcmpl-code"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-4"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "I can help you with coding! What would you like to know?"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 12
-        completion_tokens: 14
-        total_tokens: 26
+    messages:
+      - role: "user"
+        content: ".*(code|programming|script).*"
+        matcher: "regex"
+      - role: "assistant"
+        content: "I can help you with coding! What would you like to know?"
 
-  # Inverted match - anything NOT containing "admin"
-  - id: "non-admin"
-    matcher:
-      type: "contains"
-      invert: true
-      messages:
-        - role: "user"
-          content: "admin"
-    response:
-      id: "chatcmpl-normal"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "This is a normal user request."
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 6
-        completion_tokens: 8
-        total_tokens: 14
+  # Any match - flexible conversation flow
+  - id: "flexible-flow"
+    messages:
+      - role: "user"
+        matcher: "any"
+      - role: "assistant"
+        content: "Thanks for your message!"
+
+  # Multi-turn conversation with tool calls
+  - id: "weather-tool-flow"
+    messages:
+      - role: "user"
+        content: "weather"
+        matcher: "contains"
+      - role: "assistant"
+        tool_calls:
+          - id: "call_abc123"
+            type: "function"
+            function:
+              name: "get_weather"
+              arguments: '{"location": "San Francisco"}'
+      - role: "tool"
+        matcher: "any"
+        tool_call_id: "call_abc123"
+      - role: "assistant"
+        content: "It's sunny in San Francisco!"
 ```
 
 ## Configuration Tips
@@ -263,33 +192,25 @@ port: "${PORT:-3000}"
 ```
 
 ### File Organization
-For complex configurations, consider splitting into multiple files and using YAML anchors:
+For complex configurations, consider using YAML anchors for common patterns:
 
 ```yaml
-# Common response template
-common_response: &common_response
-  object: "chat.completion"
-  created: 1677649420
-  model: "gpt-3.5-turbo"
+# Common assistant response template
+assistant_response: &assistant_response
+  role: "assistant"
 
 responses:
   - id: "greeting"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello"
-    response:
-      <<: *common_response
-      id: "chatcmpl-greeting"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello!"
-          finish_reason: "stop"
-      usage:
-        prompt_tokens: 2
-        completion_tokens: 2
-        total_tokens: 4
+    messages:
+      - role: "user"
+        content: "Hello"
+      - <<: *assistant_response
+        content: "Hello! How can I help you?"
+
+  - id: "farewell"
+    messages:
+      - role: "user"
+        content: "Goodbye"
+      - <<: *assistant_response
+        content: "Goodbye! Have a great day!"
 ```

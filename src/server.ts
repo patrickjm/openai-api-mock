@@ -3,7 +3,7 @@ import { Server } from 'http';
 import { MockConfig, ChatCompletionRequest, OpenAIError, OpenAIResponse, StreamResponse, Usage } from './types';
 import { Logger } from './logger';
 import { MessageMatcherService } from './matcher';
-import { encoding_for_model } from 'tiktoken';
+import { encoding_for_model, get_encoding } from 'tiktoken';
 
 export class MockServer {
   private app: express.Application;
@@ -128,34 +128,44 @@ export class MockServer {
       }
 
       // Find matching response
-      const matchingMatcher = this.matcher.findMatch(request, this.config.responses.map(r => r.matcher));
+      const matchResult = this.matcher.findMatch(request, this.config.responses);
       
-      if (!matchingMatcher) {
+      if (!matchResult) {
         return this.sendError(res, 400, 'no_match_found', 'No matching response found for the provided messages');
       }
 
-      // Find the corresponding response
-      const mockResponse = this.config.responses.find(r => r.matcher === matchingMatcher);
+      const { response: mockResponse, matchedLength } = matchResult;
+
+      // Find the appropriate assistant response for this match
+      const assistantResponse = this.matcher.findResponseForMatch(mockResponse.messages, matchedLength);
       
-      if (!mockResponse) {
-        return this.sendError(res, 500, 'internal_error', 'Internal configuration error');
+      if (!assistantResponse) {
+        return this.sendError(res, 500, 'internal_error', 'No assistant response found in conversation flow');
       }
 
       // Handle streaming vs non-streaming
       if (request.stream) {
-        await this.handleStreamingResponse(res, mockResponse, request);
+        await this.handleStreamingResponse(res, assistantResponse, request, mockResponse.id);
       } else {
         // Calculate tokens dynamically
-        const responseContent = mockResponse.response.choices[0]?.message?.content || '';
+        const responseContent = assistantResponse.content || '';
         const usage = this.calculateTokens(request, responseContent);
 
         // Create OpenAI-compatible response
         const response: OpenAIResponse & { usage: Usage } = {
-          ...mockResponse.response,
           id: `chatcmpl-${this.generateId()}`,
           object: 'chat.completion',
           created: Math.floor(Date.now() / 1000),
           model: request.model,
+          choices: [{
+            index: 0,
+            message: {
+              role: 'assistant',
+              content: assistantResponse.content,
+              tool_calls: assistantResponse.tool_calls,
+            },
+            finish_reason: 'stop',
+          }],
           usage,
         };
 
@@ -183,7 +193,7 @@ export class MockServer {
     res.status(status).json(error);
   }
 
-  private async handleStreamingResponse(res: Response, mockResponse: any, request: ChatCompletionRequest): Promise<void> {
+  private async handleStreamingResponse(res: Response, assistantResponse: any, request: ChatCompletionRequest, responseId: string): Promise<void> {
     const streamId = `chatcmpl-${this.generateId()}`;
     const created = Math.floor(Date.now() / 1000);
     
@@ -195,7 +205,7 @@ export class MockServer {
       'X-Accel-Buffering': 'no', // Disable nginx buffering
     });
 
-    this.logger.info(`Starting streaming response for: ${mockResponse.id}`);
+    this.logger.info(`Starting streaming response for: ${responseId}`);
 
     // Send initial chunk with role
     const initialChunk: StreamResponse = {
@@ -212,7 +222,7 @@ export class MockServer {
     res.write(`data: ${JSON.stringify(initialChunk)}\n\n`);
 
     // Stream the content word by word
-    const content = mockResponse.response.choices[0].message.content;
+    const content = assistantResponse.content || '';
     const words = content.split(' ');
     
     for (let i = 0; i < words.length; i++) {
@@ -260,37 +270,23 @@ export class MockServer {
   }
 
   private calculateTokens(request: ChatCompletionRequest, responseContent: string): Usage {
-    try {
-      const encoding = encoding_for_model(request.model as any);
-      
-      // Calculate prompt tokens from all messages
-      const promptText = request.messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-      const promptTokens = encoding.encode(promptText).length;
-      
-      // Calculate completion tokens from response content
-      const completionTokens = encoding.encode(responseContent).length;
-      
-      encoding.free();
-      
-      return {
-        prompt_tokens: promptTokens,
-        completion_tokens: completionTokens,
-        total_tokens: promptTokens + completionTokens
-      };
-    } catch (error) {
-      // Fallback to basic estimation if model encoding fails
-      this.logger.warn(`Token calculation failed for model ${request.model}, using fallback`, error);
-      
-      const promptText = request.messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-      const promptTokens = Math.ceil(promptText.length / 4); // Rough estimation: 4 chars per token
-      const completionTokens = Math.ceil(responseContent.length / 4);
-      
-      return {
-        prompt_tokens: promptTokens,
-        completion_tokens: completionTokens,
-        total_tokens: promptTokens + completionTokens
-      };
-    }
+    // Always use cl100k_base encoding for simplicity in mock environment
+    const encoding = get_encoding('cl100k_base');
+    
+    // Calculate prompt tokens from all messages
+    const promptText = request.messages.map(msg => `${msg.role}: ${msg.content || ''}`).join('\n');
+    const promptTokens = encoding.encode(promptText).length;
+    
+    // Calculate completion tokens from response content
+    const completionTokens = encoding.encode(responseContent).length;
+    
+    encoding.free();
+    
+    return {
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      total_tokens: promptTokens + completionTokens
+    };
   }
 
   async start(port: number): Promise<void> {

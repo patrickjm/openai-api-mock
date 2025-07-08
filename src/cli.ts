@@ -11,7 +11,7 @@ program
   .name('openai-mock-api')
   .description('A mock OpenAI API server for testing LLM applications')
   .version('1.0.0')
-  .requiredOption('-c, --config <path>', 'Path to YAML configuration file')
+  .option('-c, --config <path>', 'Path to YAML configuration file (use "-" for stdin)')
   .option('-p, --port <number>', 'Port to run the server on', '3000')
   .option('-l, --log-file <path>', 'Path to log file (defaults to stdout)')
   .option('-v, --verbose', 'Enable verbose logging')
@@ -23,7 +23,10 @@ async function main() {
   try {
     const logger = new Logger(options.logFile, options.verbose);
     const configLoader = new ConfigLoader(logger);
-    const config = await configLoader.load(options.config);
+    
+    // If no config specified, try to read from stdin
+    const configPath = options.config || '-';
+    const config = await configLoader.load(configPath);
     
     const server = new MockServer(config, logger);
     const port = parseInt(options.port) || config.port || 3000;

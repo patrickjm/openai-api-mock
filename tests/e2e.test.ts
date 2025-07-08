@@ -16,116 +16,61 @@ apiKey: "test-api-key-12345"
 port: ${testPort}
 responses:
   - id: "exact-greeting"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "user"
-          content: "Hello, how are you?"
-    response:
-      id: "chatcmpl-test1"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Hello! I'm doing well, thank you for asking."
-          finish_reason: "stop"
+    messages:
+      - role: "user"
+        content: "Hello, how are you?"
+      - role: "assistant"
+        content: "Hello! I'm doing well, thank you for asking."
 
   - id: "fuzzy-help"
-    matcher:
-      type: "fuzzy"
-      threshold: 0.4
-      messages:
-        - role: "user"
-          content: "I need help with something"
-    response:
-      id: "chatcmpl-test2"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "I'd be happy to help!"
-          finish_reason: "stop"
+    messages:
+      - role: "user"
+        content: "I need help with something"
+        matcher: "fuzzy"
+        threshold: 0.4
+      - role: "assistant"
+        content: "I'd be happy to help!"
 
   - id: "regex-code"
-    matcher:
-      type: "regex"
-      messages:
-        - role: "user"
-          content: ".*code.*python.*"
-    response:
-      id: "chatcmpl-test3"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-4"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "Here's some Python code for you!"
-          finish_reason: "stop"
+    messages:
+      - role: "user"
+        content: ".*code.*python.*"
+        matcher: "regex"
+      - role: "assistant"
+        content: "Here's some Python code for you!"
+
+  - id: "conversation-flow"
+    messages:
+      - role: "user"
+        content: "Start conversation"
+      - role: "assistant"
+        content: "Hello! How can I help you?"
+      - role: "user"
+        content: "Tell me about the weather"
+      - role: "assistant"
+        content: "The weather is sunny and warm today!"
 
   - id: "contains-weather"
-    matcher:
-      type: "contains"
-      messages:
-        - role: "user"
-          content: "weather"
-    response:
-      id: "chatcmpl-test4"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "The weather is nice today!"
-          finish_reason: "stop"
+    messages:
+      - role: "user"
+        content: "weather"
+        matcher: "contains"
+      - role: "assistant"
+        content: "The weather is nice today!"
 
-  - id: "inverted-contains"
-    matcher:
-      type: "contains"
-      invert: true
-      messages:
-        - role: "user"
-          content: "SPECIFIC_WORD_TO_AVOID"
-        - role: "assistant"
-          content: "response"
-    response:
-      id: "chatcmpl-test5"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "This matches messages that don't contain the specific word!"
-          finish_reason: "stop"
+  - id: "any-user-message"
+    messages:
+      - role: "user"
+        matcher: "any"
+      - role: "assistant"
+        content: "This matches any user message!"
 
   - id: "specific-unmatched"
-    matcher:
-      type: "exact"
-      messages:
-        - role: "system"
-          content: "This exact system message should not be used"
-    response:
-      id: "chatcmpl-test6"
-      object: "chat.completion"
-      created: 1677649420
-      model: "gpt-3.5-turbo"
-      choices:
-        - index: 0
-          message:
-            role: "assistant"
-            content: "This should not match"
-          finish_reason: "stop"
+    messages:
+      - role: "system"
+        content: "This exact system message should not be used"
+      - role: "assistant"
+        content: "This should not match"
 `;
 
     fs.writeFileSync(testConfigPath, testConfig);
@@ -221,28 +166,15 @@ responses:
       expect(response.choices[0].message.content).toBe("The weather is nice today!");
     });
 
-    test('should handle inverted contains matching', async () => {
+    test('should handle "any" matcher for flexible flows', async () => {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'user', content: 'Any message without the specific word' },
-          { role: 'assistant', content: 'Another message' }
+          { role: 'user', content: 'Any random user message here' }
         ],
       });
 
-      expect(response.choices[0].message.content).toBe("This matches messages that don't contain the specific word!");
-    });
-
-    test('should not match when inverted matcher would normally match', async () => {
-      await expect(
-        openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'user', content: "This contains SPECIFIC_WORD_TO_AVOID in it" },
-            { role: 'assistant', content: "response" }
-          ],
-        })
-      ).rejects.toThrow();
+      expect(response.choices[0].message.content).toBe("This matches any user message!");
     });
 
     test('should return error for unmatched messages', async () => {
@@ -250,11 +182,46 @@ responses:
         openai.chat.completions.create({
           model: 'gpt-3.5-turbo',
           messages: [
-            { role: 'user', content: 'SPECIFIC_WORD_TO_AVOID' },
-            { role: 'assistant', content: 'response' }
+            { role: 'system', content: 'This system message has no matching pattern' }
           ],
         })
       ).rejects.toThrow();
+    });
+
+    test('should support partial conversation matching - first turn', async () => {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'user', content: 'Start conversation' }
+        ],
+      });
+
+      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
+    });
+
+    test('should support partial conversation matching - second turn', async () => {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'user', content: 'Start conversation' },
+          { role: 'assistant', content: 'Hello! How can I help you?' }
+        ],
+      });
+
+      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
+    });
+
+    test('should support partial conversation matching - full conversation', async () => {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'user', content: 'Start conversation' },
+          { role: 'assistant', content: 'Hello! How can I help you?' },
+          { role: 'user', content: 'Tell me about the weather' }
+        ],
+      });
+
+      expect(response.choices[0].message.content).toBe("The weather is sunny and warm today!");
     });
   });
 
@@ -285,6 +252,21 @@ responses:
       expect(models.data).toHaveLength(2);
       expect(models.data.map(m => m.id)).toContain('gpt-3.5-turbo');
       expect(models.data.map(m => m.id)).toContain('gpt-4');
+    });
+  });
+
+  describe('Token Calculation', () => {
+    test('should calculate tokens for unsupported model using default tokenizer', async () => {
+      const response = await openai.chat.completions.create({
+        model: 'custom-unsupported-model',
+        messages: [{ role: 'user', content: 'Hello, how are you?' }],
+      });
+
+      expect(response.choices[0].message.content).toBe("Hello! I'm doing well, thank you for asking.");
+      expect(response.usage).toBeDefined();
+      expect(response.usage?.total_tokens).toBeGreaterThan(0);
+      expect(response.usage?.prompt_tokens).toBeGreaterThan(0);
+      expect(response.usage?.completion_tokens).toBeGreaterThan(0);
     });
   });
 

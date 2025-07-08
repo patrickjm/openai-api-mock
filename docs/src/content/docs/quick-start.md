@@ -46,6 +46,19 @@ Run the mock server using npx (no installation required):
 npx openai-mock-api --config config.yaml
 ```
 
+You can also pipe configuration from stdin:
+
+```bash
+# Using pipe
+cat config.yaml | npx openai-mock-api
+
+# Using input redirection
+npx openai-mock-api < config.yaml
+
+# Explicitly specify stdin
+npx openai-mock-api --config -
+```
+
 You should see output like:
 ```
 Mock OpenAI API server started on port 3000
@@ -162,6 +175,17 @@ npx openai-mock-api --config config.yaml --verbose
 
 # Log to file
 npx openai-mock-api --config config.yaml --log-file server.log
+
+# Quick test with inline config
+echo 'apiKey: test
+port: 3000
+responses:
+  - id: test
+    messages:
+      - role: user
+        content: Hi
+      - role: assistant
+        content: Hello!' | npx openai-mock-api
 
 # See all options
 npx openai-mock-api --help

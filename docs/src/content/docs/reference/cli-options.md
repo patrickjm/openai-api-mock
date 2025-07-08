@@ -13,18 +13,26 @@ Complete reference for the `openai-mock-api` command-line interface.
 openai-mock-api [options]
 ```
 
-## Required Options
+## Configuration Options
 
 ### `-c, --config <path>`
 
-**Required** - Path to the YAML configuration file.
+Path to the YAML configuration file. Use `-` to read from stdin.
 
 ```bash
+# From file
 openai-mock-api --config config.yaml
 openai-mock-api -c /path/to/config.yaml
+
+# From stdin
+cat config.yaml | openai-mock-api --config -
+openai-mock-api --config - < config.yaml
+
+# Without --config flag (defaults to stdin)
+cat config.yaml | openai-mock-api
 ```
 
-The configuration file must be a valid YAML file containing your API key, responses, and other settings.
+The configuration must be a valid YAML containing your API key, responses, and other settings. If no config option is provided, the tool will attempt to read from stdin.
 
 ## Optional Options
 
@@ -88,6 +96,9 @@ openai-mock-api --version
 # Minimal setup
 openai-mock-api --config config.yaml
 
+# From stdin
+cat config.yaml | openai-mock-api
+
 # Custom port
 openai-mock-api --config config.yaml --port 3001
 
@@ -116,6 +127,17 @@ openai-mock-api -c config.yaml -p 3001
 
 # Log to a specific file for debugging
 openai-mock-api -c config.yaml -l debug.log -v
+
+# Quick test with inline config
+echo 'apiKey: test-key
+port: 3000
+responses:
+  - id: test
+    messages:
+      - role: user
+        content: Hello
+      - role: assistant
+        content: Hi!' | openai-mock-api -v
 ```
 
 ### Production Usage

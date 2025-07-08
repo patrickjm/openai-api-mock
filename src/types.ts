@@ -6,20 +6,25 @@ export interface MockConfig {
 
 export interface MockResponse {
   id: string;
-  matcher: MessageMatcher;
-  response: OpenAIResponse;
+  messages: ConversationMessage[];
 }
 
-export interface MessageMatcher {
-  type: 'exact' | 'fuzzy' | 'regex' | 'contains';
-  messages: MessagePattern[];
+export interface ConversationMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content?: string;
+  matcher?: 'exact' | 'fuzzy' | 'regex' | 'contains' | 'any';
   threshold?: number; // For fuzzy matching (0-1)
-  invert?: boolean; // If true, inverts the match result
+  tool_calls?: ToolCall[];
+  tool_call_id?: string;
 }
 
-export interface MessagePattern {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
 }
 
 export interface OpenAIResponse {
@@ -35,6 +40,7 @@ export interface StreamChoice {
   delta: {
     role?: 'assistant';
     content?: string;
+    tool_calls?: ToolCall[];
   };
   finish_reason?: 'stop' | 'length' | 'function_call' | 'content_filter' | null;
 }
@@ -51,7 +57,8 @@ export interface Choice {
   index: number;
   message: {
     role: 'assistant';
-    content: string;
+    content?: string;
+    tool_calls?: ToolCall[];
   };
   finish_reason: 'stop' | 'length' | 'function_call' | 'content_filter';
 }
@@ -74,8 +81,10 @@ export interface OpenAIError {
 export interface ChatCompletionRequest {
   model: string;
   messages: Array<{
-    role: 'system' | 'user' | 'assistant';
-    content: string;
+    role: 'system' | 'user' | 'assistant' | 'tool';
+    content?: string;
+    tool_calls?: ToolCall[];
+    tool_call_id?: string;
   }>;
   max_tokens?: number;
   temperature?: number;
